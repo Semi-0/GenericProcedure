@@ -32,6 +32,6 @@ export class GenericProcedureMetadata {
      * @param handler - The handler function to be used if the predicate matches.
      */
     public addHandler(predicate: (...args: any) => boolean, handler: (...args: any) => any): void {
-        this.metaData.push({ predicate, handler });
+        this.metaData.unshift({ predicate, handler });
     }
 }
