@@ -1,4 +1,5 @@
 import { GenericProcedureMetadata } from "./GenericProcedureMetadata";
+
 export type GenericProcedureStore = Map<(...args: any) => any, GenericProcedureMetadata>
 const stores =  new Map<(...args: any) => any, GenericProcedureMetadata>()
 
