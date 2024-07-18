@@ -6,11 +6,7 @@ import type { Int } from "./types";
 export class GenericProcedureMetadata {
     name: string;
     arity: Int;
-    metaData: Array<{
-        predicate: (...args: any) => boolean,
-        handler: (...args: any) => any
-    }>;
-    defaultHandler: (...args: any) => any;
+    dispatchStore: DispatchStore;
 
     /**
      * Constructs an instance of GenericProcedureMetadata.
@@ -19,11 +15,11 @@ export class GenericProcedureMetadata {
      * @param metaData - An array of objects containing predicates and handlers.
      * @param defaultHandler - The default handler to use if no predicates match.
      */
-    constructor(name: string, arity: Int, metaData: Array<{ predicate: (...args: any) => boolean, handler: (...args: any) => any }>, defaultHandler: (...args: any) => any) {
+    constructor(name: string, arity: Int, metaData: DispatchStore , defaultHandler: (...args: any) => any) {
         this.name = name;
         this.arity = arity;
-        this.metaData = metaData;
-        this.defaultHandler = defaultHandler;
+        this.dispatchStore = metaData;
+        this.dispatchStore.set_default_handler(defaultHandler)
     }
 
     /**
@@ -32,6 +28,6 @@ export class GenericProcedureMetadata {
      * @param handler - The handler function to be used if the predicate matches.
      */
     public addHandler(predicate: (...args: any) => boolean, handler: (...args: any) => any): void {
-        this.metaData.unshift({ predicate, handler });
+        this.dispatchStore.add_handler(predicate, handler)
     }
 }

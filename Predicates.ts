@@ -1,4 +1,6 @@
 // TODO: ADD STORE FOR PREDICATES
+// TODO: PREDICATE CAN BE MORE EFFICIENT WITH A_TRIE & INTEGRATION INTO GENERIC STORE
+
 class PredicateProcedure{
     procedure: (arg: any) => boolean
     cache: Map<any, boolean>
@@ -10,9 +12,16 @@ class PredicateProcedure{
 
 const predicatesStore = new Map<string, PredicateProcedure>()
 
-export function execute_procedure(arg: any, proc: PredicateProcedure){
-    if (proc.cache.has(arg)){
-        return proc.cache.get(arg)
+//// WARNING !!!!: THIS IS ONLY FOR TEST, DO NOT TOUCH IT!!!
+export function clear_predicate_store(){
+    predicatesStore.clear()
+}
+
+export function execute_procedure(arg: any, proc: PredicateProcedure): any{
+
+    const cached_value = proc.cache.get(arg)
+    if (cached_value !== undefined && cached_value !== null){
+        return cached_value
     }
     else{
         const result = proc.procedure(arg)
@@ -44,7 +53,7 @@ export function execute_predicate(name: string, args: any){
     return execute_procedure(args, predicate)
 }
 
-function match_args(predicates: PredicateProcedure[]): (...args: any) => boolean{
+export function match_args(predicates: PredicateProcedure[]): (...args: any) => boolean{
     return (...args: any) => {
        if(predicates.length !== args.length){
         throw new Error("Predicates and arguments length mismatch", { cause: { predicates, args } })

@@ -1,6 +1,7 @@
 import { set_metaData, get_metaData, get_default_store } from "./GenericStore";
 import { GenericProcedureMetadata } from "./GenericProcedureMetadata";
 import type { Int } from "./types";
+import { SimpleDispatchStore } from "./DispatchStore";
 
 // idea: for a new ide, maybe instead of consider everything linear, it should always seperatable and reorganizable in blocks(and import exportable)
 
@@ -15,18 +16,18 @@ export function define_generic_procedure_handler(procedure: (...args: any) => an
 }
 
 function generic_procedure_dispatch(metaData: GenericProcedureMetadata, args: any[]): any{
-    const matched_handler = metaData.metaData.find(rule => rule.predicate(...args))
-    if(matched_handler !== undefined){
-        return matched_handler.handler(...args)
+    const matched_handler = metaData.dispatchStore.get_handler(...args)
+    if(matched_handler !== null){
+        return matched_handler(...args)
     }
     else{
-        return metaData.defaultHandler(...args)
+        return metaData.dispatchStore.get_default_handler()(...args)
     }
 }
 
 export function construct_generic_procedure(generic_procedure_store: Map<(...args: any) => any, GenericProcedureMetadata>){
     const constructor = (name: string, arity: Int, defaultHandler: (...args: any) => any) => {
-        const metaData = new GenericProcedureMetadata(name, arity, [], defaultHandler)
+        const metaData = new GenericProcedureMetadata(name, arity, new SimpleDispatchStore(), defaultHandler)
         const the_generic_procedure = (...args: any) => {
             return generic_procedure_dispatch(metaData, args)
         }
