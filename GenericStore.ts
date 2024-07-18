@@ -1,8 +1,8 @@
 import { GenericProcedureMetadata } from "./GenericProcedureMetadata";
 
 export type GenericProcedureStore = Map<(...args: any) => any, GenericProcedureMetadata>
-const stores =  new Map<(...args: any) => any, GenericProcedureMetadata>()
-
+const default_store =  new Map<(...args: any) => any, GenericProcedureMetadata>()
+var stores = default_store
 export function set_metaData(procedure: (...args: any) => any, metaData: GenericProcedureMetadata){
     stores.set(procedure, metaData)
 }
@@ -17,4 +17,8 @@ export function construct_store(): GenericProcedureStore{
 
 export function get_default_store(): GenericProcedureStore{
     return stores
+}
+
+export function set_store(store: GenericProcedureStore){
+    stores = store
 }
