@@ -1,46 +1,48 @@
 // TODO: PREDICATE CAN BE MORE EFFICIENT WITH A_TRIE & INTEGRATION INTO GENERIC STORE
 
-class PredicateProcedure{
-    procedure: (arg: any) => boolean
-    cache: Map<any, boolean>
-    constructor(procedure: (arg: any) => boolean, cache: Map<any, boolean>){
-        this.procedure = procedure
-        this.cache = cache
-    }
-}
+
+
+import { SimpleDispatchStore } from './DispatchStore';
 
 export class PredicateStore {
-    private store: Map<string, PredicateProcedure> = new Map();
+    private store: SimpleDispatchStore = new SimpleDispatchStore();
+    private predicateNames: Set<string> = new Set();
 
     clear() {
-        this.store.clear();
-    }
+        this.store = new SimpleDispatchStore();
+        this.predicateNames.clear();
+    } 
 
     register(name: string, predicate: (args: any) => boolean) {
-        this.store.set(name, construct_procedure(predicate));
+        this.store.add_handler(
+            (args) => args === name,
+            (args) => predicate(args)
+        );
+        this.predicateNames.add(name);
     }
 
-    get(name: string): PredicateProcedure | undefined {
-        if (!this.store.has(name)) {
+    get(name: string): (arg: any) => boolean {
+        const handler = this.store.get_handler(name);
+        if (!handler) {
             throw new Error(`Predicate ${name} not found`);
         }
-        return this.store.get(name);
+        return handler;
     }
 
     execute(name: string, args: any) {
-        const predicate = this.get(name);
-        if (!predicate) {
-            throw new Error(`Predicate ${name} not found`);
-        }
-        return execute_procedure(args, predicate);
+        return this.get(name)(args);
+    }
+
+    get_all_predicates() {
+        return Array.from(this.predicateNames);
     }
 
     display_all() {
-        console.log(Array.from(this.store.keys()));
+        console.log(this.get_all_predicates());
     }
 
     search(name: string) {
-        const result = Array.from(this.store.keys())
+        const result = this.get_all_predicates()
             .filter(predicate => predicate.includes(name))
             .sort();
         console.log(result);
@@ -65,7 +67,7 @@ export function register_predicate(name: string, predicate: (args: any) => boole
     defaultPredicateStore.register(name, predicate);
 }
 
-export function get_predicate(name: string): PredicateProcedure | undefined {
+export function get_predicate(name: string): ((arg: any) => boolean) | undefined {
     return defaultPredicateStore.get(name);
 }
 
@@ -79,23 +81,6 @@ export function display_all_predicates() {
 
 export function search_predicate(name: string) {
     defaultPredicateStore.search(name);
-}
-
-export function execute_procedure(arg: any, proc: PredicateProcedure): any{
-
-    const cached_value = proc.cache.get(arg)
-    if (cached_value !== undefined && cached_value !== null){
-        return cached_value
-    }
-    else{
-        const result = proc.procedure(arg)
-        proc.cache.set(arg, result)
-        return result
-    }
-}
-
-export function construct_procedure(proc: (arg: any) => boolean){
-    return new PredicateProcedure(proc, new Map())
 }
 
 export function match_preds(predicates: string[]): (...args: any) => boolean{

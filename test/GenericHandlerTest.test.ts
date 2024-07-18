@@ -1,7 +1,7 @@
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from '../GenericProcedure';
 import {test, expect, describe, beforeEach, mock, jest} from "bun:test";
 
-import { register_predicate, execute_predicate, get_predicate, construct_procedure, match_args, clear_predicate_store, match_preds } from '../Predicates';
+import { register_predicate, execute_predicate, get_predicate,  match_args, clear_predicate_store, match_preds } from '../Predicates';
 
 
 describe('Predicates', () => {
@@ -16,11 +16,16 @@ describe('Predicates', () => {
 
         const retrievedPredicate = get_predicate('testPredicate');
         expect(retrievedPredicate).toBeDefined();
-        expect(retrievedPredicate?.procedure(42)).toBe(true);
-        expect(retrievedPredicate?.procedure(43)).toBe(false);
+        if (retrievedPredicate){
+            expect(retrievedPredicate(42)).toBe(true);
+            expect(retrievedPredicate(43)).toBe(false);
+        }
+        else{
+            throw new Error("Predicate not found");
+        }
     });
 
-    test('should execute a predicate and cache the result', () => {
+    test('should execute a predicate', () => {
         const predicate = jest.fn((arg: any) => arg === 42);
         register_predicate('testPredicate', predicate);
 
@@ -29,7 +34,7 @@ describe('Predicates', () => {
 
         expect(result1).toBe(true);
         expect(result2).toBe(true);
-        expect(predicate).toHaveBeenCalledTimes(1); // Should be called only once due to caching
+        expect(predicate).toHaveBeenCalledTimes(2); // No caching, so it's called twice
     });
 
     test('should throw an error if predicate not found', () => {
