@@ -1,7 +1,7 @@
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from '../GenericProcedure';
 import {test, expect, describe, beforeEach, mock, jest} from "bun:test";
 
-import { add_predicate, execute_predicate, get_predicate, construct_procedure, match_args, clear_predicate_store, match_preds } from '../Predicates';
+import { register_predicate, execute_predicate, get_predicate, construct_procedure, match_args, clear_predicate_store, match_preds } from '../Predicates';
 
 
 describe('Predicates', () => {
@@ -12,7 +12,7 @@ describe('Predicates', () => {
 
     test('should add and retrieve a predicate', () => {
         const predicate = (arg: any) => arg === 42;
-        add_predicate('testPredicate', predicate);
+        register_predicate('testPredicate', predicate);
 
         const retrievedPredicate = get_predicate('testPredicate');
         expect(retrievedPredicate).toBeDefined();
@@ -22,7 +22,7 @@ describe('Predicates', () => {
 
     test('should execute a predicate and cache the result', () => {
         const predicate = jest.fn((arg: any) => arg === 42);
-        add_predicate('testPredicate', predicate);
+        register_predicate('testPredicate', predicate);
 
         const result1 = execute_predicate('testPredicate', 42);
         const result2 = execute_predicate('testPredicate', 42);
@@ -40,8 +40,8 @@ describe('Predicates', () => {
         const predicate1 = (arg: any) => arg === 42;
         const predicate2 = (arg: any) => arg === 'test';
 
-        const proc1 = add_predicate('42?', predicate1);
-        const proc2 = add_predicate('test?', predicate2);
+        register_predicate('42?', predicate1);
+        register_predicate('test?', predicate2);
 
         const match = match_preds(["42?", "test?"]);
 
@@ -52,7 +52,7 @@ describe('Predicates', () => {
 
     test('should throw an error if predicates and arguments length mismatch', () => {
         const predicate1 = (arg: any) => arg === 42;
-        const proc1 = add_predicate('42?', predicate1);
+        register_predicate('42?', predicate1);
 
         const match = match_preds(["42?"]);
 
