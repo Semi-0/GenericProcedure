@@ -71,6 +71,14 @@ export function get_predicate(name: string): ((arg: any) => boolean) | undefined
     return defaultPredicateStore.get(name);
 }
 
+export function get_predicates() {
+    return defaultPredicateStore.get_all_predicates();
+}
+
+export function filter_predicates(predicate: (name: string) => boolean) {
+    return defaultPredicateStore.get_all_predicates().filter(predicate);
+}
+
 export function execute_predicate(name: string, args: any) {
     return defaultPredicateStore.execute(name, args);
 }
