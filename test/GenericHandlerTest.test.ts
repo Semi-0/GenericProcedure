@@ -1,7 +1,7 @@
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from '../GenericProcedure';
 import {test, expect, describe, beforeEach, mock, jest} from "bun:test";
 
-import { add_predicate, execute_predicate, get_predicate, construct_procedure, match_args, clear_predicate_store } from '../Predicates';
+import { add_predicate, execute_predicate, get_predicate, construct_procedure, match_args, clear_predicate_store, match_preds } from '../Predicates';
 
 
 describe('Predicates', () => {
@@ -40,10 +40,10 @@ describe('Predicates', () => {
         const predicate1 = (arg: any) => arg === 42;
         const predicate2 = (arg: any) => arg === 'test';
 
-        const proc1 = construct_procedure(predicate1);
-        const proc2 = construct_procedure(predicate2);
+        const proc1 = add_predicate('42?', predicate1);
+        const proc2 = add_predicate('test?', predicate2);
 
-        const match = match_args([proc1, proc2]);
+        const match = match_preds(["42?", "test?"]);
 
         expect(match(42, 'test')).toBe(true);
         expect(match(42, 'fail')).toBe(false);
@@ -52,9 +52,9 @@ describe('Predicates', () => {
 
     test('should throw an error if predicates and arguments length mismatch', () => {
         const predicate1 = (arg: any) => arg === 42;
-        const proc1 = construct_procedure(predicate1);
+        const proc1 = add_predicate('42?', predicate1);
 
-        const match = match_args([proc1]);
+        const match = match_preds(["42?"]);
 
         expect(() => match(42, 'extraArg')).toThrow('Predicates and arguments length mismatch');
     });

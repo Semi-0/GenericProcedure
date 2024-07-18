@@ -45,6 +45,8 @@ export function get_predicate(name: string): PredicateProcedure | undefined{
     return predicatesStore.get(name)
 } 
 
+
+
 export function execute_predicate(name: string, args: any){
     const predicate = get_predicate(name)
     if (!predicate){
@@ -53,13 +55,31 @@ export function execute_predicate(name: string, args: any){
     return execute_procedure(args, predicate)
 }
 
-export function match_args(predicates: PredicateProcedure[]): (...args: any) => boolean{
+export function match_preds(predicates: string[]): (...args: any) => boolean{
     return (...args: any) => {
        if(predicates.length !== args.length){
         throw new Error("Predicates and arguments length mismatch", { cause: { predicates, args } })
        }
        else{
-        return predicates.every((predicate, index) => execute_procedure(args[index], predicate))
+        return predicates.every((predicate, index) => execute_predicate(predicate, args[index]))
        }
     }
+}
+
+export function match_args(arg_critics: ((arg: any) => boolean)[]): (...args: any) => boolean{
+    return (...args: any) => args.every((arg, index) => arg_critics[index](arg))
+}
+
+
+
+export function display_all_predicates(){
+    console.log(Array.from(predicatesStore.keys()))
+}
+
+
+export function search_predicate(name: string) {
+    const result = Array.from(predicatesStore.keys())
+            .filter(predicate => predicate.includes(name))
+            .sort();
+    console.log(result)
 }
