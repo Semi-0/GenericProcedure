@@ -56,7 +56,7 @@ export class SimpleDispatchStore implements DispatchStore{
             existed.set_handler(handler)
         }
         else{
-            this.rules.push(new Rule(applicability, handler))
+            this.rules.unshift(new Rule(applicability, handler))
         }
     }
 
