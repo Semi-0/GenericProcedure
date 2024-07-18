@@ -23,6 +23,7 @@ export interface DispatchStore{
     remove_handler: (applicability: (...args: any) => boolean) => void
     get_default_handler: () => ((...args: any) => any)
     set_default_handler: (handler: (...args: any) => any) => void
+    get_all_critics: () => ((...args: any) => boolean)[]
 }
 
 
@@ -34,6 +35,10 @@ export class SimpleDispatchStore implements DispatchStore{
     }
 
     constructor(){}
+
+    get_all_critics(){
+        return this.rules.map(rule => rule.applicability)
+    }
 
     get_handler(...args: any) : ((...args: any) => any) | null {
        const rule = this.rules.find(rule => rule.applicability(...args))

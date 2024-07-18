@@ -41,3 +41,23 @@ export function construct_simple_generic_procedure(name: string, arity: Int, def
     const generic_procedure_store = get_default_store()
     return construct_generic_procedure(generic_procedure_store)(name, arity, defaultHandler)
 }
+
+export function search_handler(procedure: (...args: any) => any, criteria: (...args: any) => boolean){
+    const metaData = get_metaData(procedure)
+    if(metaData !== undefined){
+        return metaData.dispatchStore.get_handler(criteria)?.toString()
+    }
+    else{
+        throw new Error("GenericProcedureMetadata not found")
+    }
+}
+
+export function get_all_critics(procedure: (...args: any) => any){
+    const metaData = get_metaData(procedure)
+    if(metaData !== undefined){
+        return metaData.dispatchStore.get_all_critics().map(critic => critic.toString())
+    }
+    else{
+        throw new Error("GenericProcedureMetadata not found")
+    }
+}
