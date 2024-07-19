@@ -76,7 +76,7 @@ export function search_handler(procedure: (...args: any) => any, criteria: (...a
 export function get_all_critics(procedure: (...args: any) => any){
     const metaData = get_metaData(procedure)
     if(metaData !== undefined){
-        return metaData.dispatchStore.get_all_critics().map(critic => critic.toString())
+        return metaData.dispatchStore.get_all_critics()
     }
     else{
         throw new Error("GenericProcedureMetadata not found")

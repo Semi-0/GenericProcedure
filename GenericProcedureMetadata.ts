@@ -8,6 +8,7 @@ export class GenericProcedureMetadata {
     name: string;
     arity: Int;
     dispatchStore: DispatchStore;
+    
 
     /**
      * Constructs an instance of GenericProcedureMetadata.

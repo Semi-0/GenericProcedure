@@ -116,4 +116,24 @@ describe('generic_procedure', () => {
         expect(result2).toBe("response from handler 2");
     });
 
+    test('should execute the most recently added handler when multiple handlers match', () => {
+        const testFunc = construct_simple_generic_procedure("testFunc", 1, defaultHandler);
+        
+        const handler1 = jest.fn(() => "response from handler 1");
+        const handler2 = jest.fn(() => "response from handler 2");
+        
+        const predicate1 = jest.fn(() => true);  // This will always match
+        const predicate2 = jest.fn(() => true);  // This will also always match
+        
+        define_generic_procedure_handler(testFunc, predicate1, handler1);
+        define_generic_procedure_handler(testFunc, predicate2, handler2);
+        
+        const result = testFunc(42);
+        
+        expect(predicate2).toHaveBeenCalledWith(42);
+        expect(predicate1).not.toHaveBeenCalled();  // The second predicate should prevent this from being called
+        expect(handler2).toHaveBeenCalledWith(42);
+        expect(handler1).not.toHaveBeenCalled();
+        expect(result).toBe("response from handler 2");
+    });
 });
