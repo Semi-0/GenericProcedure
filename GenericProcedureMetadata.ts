@@ -18,8 +18,8 @@ export class GenericProcedureMetadata {
      * @param defaultHandler - The default handler to use if no predicates match.
      */
     constructor(name: string, arity: Int, metaData: DispatchStore , defaultHandler: (...args: any) => any) {
-        this.name = name;
-        this.arity = arity;
+        this.name          = name;
+        this.arity         = arity;
         this.dispatchStore = metaData;
         this.dispatchStore.set_default_handler(defaultHandler)
     }

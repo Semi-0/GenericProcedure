@@ -102,6 +102,6 @@ export function match_preds(predicates: string[]): (...args: any) => boolean{
     }
 }
 
-export function match_args(arg_critics: ((arg: any) => boolean)[]): (...args: any) => boolean{
+export function match_args(...arg_critics: ((arg: any) => boolean)[]): (...args: any) => boolean{
     return (...args: any) => args.every((arg, index) => arg_critics[index](arg))
 }

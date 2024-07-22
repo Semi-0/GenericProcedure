@@ -1,13 +1,15 @@
 {
-    "name": "generic-handler",
-    "version": "0.1.1",
-    "module": "index.ts",
-    "devDependencies": {
-      "@types/bun": "latest"
-    },
-    "peerDependencies": {
-      "typescript": "^5.0.0"
-    },
-    "type": "module"
+  "name": "generic-handler",
+  "version": "0.1.2",
+  "module": "index.ts",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "type": "module",
+  "dependencies": {
+    "runtypes": "^6.7.0"
   }
-  
+}
