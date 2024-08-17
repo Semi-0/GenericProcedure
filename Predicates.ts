@@ -94,6 +94,7 @@ export function search_predicate(name: string) {
 export function match_preds(predicates: string[]): (...args: any) => boolean{
     return (...args: any) => {
        if(predicates.length !== args.length){
+        // @ts-ignore
         throw new Error("Predicates and arguments length mismatch", { cause: { predicates, args } })
        }
        else{
@@ -105,3 +106,15 @@ export function match_preds(predicates: string[]): (...args: any) => boolean{
 export function match_args(...arg_critics: ((arg: any) => boolean)[]): (...args: any) => boolean{
     return (...args: any) => args.every((arg, index) => arg_critics[index](arg))
 }
+
+export function one_of_args_match(arg_critics: ((arg: any) => boolean)[]): (...args: any) => boolean{
+    return (...args: any) => args.some((arg, index) => arg_critics[index](arg))
+}
+
+export function all_match(arg_critic: ((arg: any) => boolean)): (...args: any) => boolean{
+    return (...args: any) => args.every((arg, index) => arg_critic(arg))
+} 
+
+
+
+//TGDO: GENERIC PREDICATE: 1. ONE OF  2. BOTH  3. AND  4. OR 5. ANY 6. CONSTANT
