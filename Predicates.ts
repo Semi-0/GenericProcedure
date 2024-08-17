@@ -2,6 +2,8 @@
 
 
 
+import { first } from './built_in_generics/generic_array';
+import { guard } from './built_in_generics/other_generic_helper';
 import { SimpleDispatchStore } from './DispatchStore';
 
 export class PredicateStore {
@@ -107,8 +109,17 @@ export function match_args(...arg_critics: ((arg: any) => boolean)[]): (...args:
     return (...args: any) => args.every((arg, index) => arg_critics[index](arg))
 }
 
-export function one_of_args_match(arg_critics: ((arg: any) => boolean)[]): (...args: any) => boolean{
-    return (...args: any) => args.some((arg, index) => arg_critics[index](arg))
+export function match_one_of_preds(...predicates: ((args: any) => boolean)[]){
+    return (...args: any) => { 
+        guard(args.length != 1, () => {
+            throw new Error("match_one_of_preds: expected at least two arguments, but got " + args.length)
+        })
+        return predicates.some((predicate, index) => predicate(first(args)))
+    }
+}
+
+export function one_of_args_match(arg_critic: ((arg: any) => boolean)): (...args: any) => boolean{
+    return (...args: any) => args.some((arg, index) => arg_critic(arg))
 }
 
 export function all_match(arg_critic: ((arg: any) => boolean)): (...args: any) => boolean{
