@@ -3,6 +3,13 @@ import { GenericProcedureMetadata } from "./GenericProcedureMetadata";
 export type GenericProcedureStore = Map<(...args: any) => any, GenericProcedureMetadata>
 const default_store =  new Map<(...args: any) => any, GenericProcedureMetadata>()
 var stores = default_store
+
+export function has_metaData(procedure: (...args: any) => any): boolean{
+    return stores.has(procedure)
+} 
+
+
+
 export function set_metaData(procedure: (...args: any) => any, metaData: GenericProcedureMetadata){
     stores.set(procedure, metaData)
 }
@@ -10,6 +17,8 @@ export function set_metaData(procedure: (...args: any) => any, metaData: Generic
 export function get_metaData(procedure: (...args: any) => any): GenericProcedureMetadata | undefined{
     return stores.get(procedure)
 }
+
+
 
 export function construct_store(): GenericProcedureStore{
     return new Map<(...args: any) => any, GenericProcedureMetadata>()

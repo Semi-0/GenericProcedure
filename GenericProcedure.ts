@@ -40,27 +40,39 @@ function generic_procedure_dispatch(metaData: GenericProcedureMetadata, args: an
     }
 }
 
-export function construct_generic_procedure(generic_procedure_store: Map<(...args: any) => any, GenericProcedureMetadata> | undefined){
-    const constructor = (name: string, arity: Int, defaultHandler: (...args: any) => any) => {
-        const metaData = new GenericProcedureMetadata(name, arity, new SimpleDispatchStore(), defaultHandler)
+export function construct_generic_procedure(dispatchStoreMaker: (...args: any) => DispatchStore){
+    const constructor = (name: string, arity: Int, defaultHandler: ((...args: any) => any) | undefined) => {
+        const metaData = new GenericProcedureMetadata(name, arity, dispatchStoreMaker(), defaultHandler ? defaultHandler : error_generic_procedure_handler(name))
         const the_generic_procedure = (...args: any) => {
             return generic_procedure_dispatch(metaData, args)
         }
-        if (generic_procedure_store !== undefined){
-            set_store(generic_procedure_store)
-            set_metaData(the_generic_procedure, metaData)
-        }
-        else{
-            set_metaData(the_generic_procedure, metaData)
-        }
+  
+        set_metaData(the_generic_procedure, metaData)
         return the_generic_procedure
     }
     return constructor
 }
 
-export function construct_simple_generic_procedure(name: string, arity: Int, defaultHandler: (...args: any) => any){
-    const generic_procedure_store = get_default_store()
-    return construct_generic_procedure(generic_procedure_store)(name, arity, defaultHandler)
+export function error_generic_procedure_handler(name: string){
+    return (...args: any) => {
+        throw new Error(`Generic procedure ${name} has no handler for arguments ${args.map(arg => arg.toString()).join(", ")}`)
+    }
+}
+
+var constant_generic_procedure_handlers: Map<(() => any), (...args: any) => any> = new Map() 
+
+function set_constant_generic_procedure_handler(constant: () => any, handler: (...args: any) => any){
+    constant_generic_procedure_handlers.set(constant, handler)
+} 
+
+export function constant_generic_procedure_handler(constant: () => any){
+    const handler = (...args: any) => {constant()}
+    set_constant_generic_procedure_handler(constant, handler)
+    return handler
+}
+
+export function construct_simple_generic_procedure(name: string, arity: Int, defaultHandler: ((...args: any) => any) | undefined = undefined){
+    return construct_generic_procedure(() => new SimpleDispatchStore())(name, arity, defaultHandler)
 }
 
 export function search_handler(procedure: (...args: any) => any, criteria: (...args: any) => boolean){
