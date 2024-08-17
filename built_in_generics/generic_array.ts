@@ -1,4 +1,4 @@
-import { isArrowFunction } from "typescript";
+import { findAncestor, isArrowFunction } from "typescript";
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure"
 import { match_args } from "../Predicates";
 import { BetterSet, is_better_set } from "./generic_better_set";
@@ -49,6 +49,17 @@ export const _filter = <T>(array: T[], predicate: (item: T) => boolean): T[] => 
     return result;
 }
 
+export const _find = <T>(array: T[], predicate: (item: T) => boolean): T | undefined => {
+    for (let i = 0; i < get_length(array); i++) {
+        const item = get_element(array, i);
+        if (predicate(item)) {
+            return item;
+        }
+    }
+    return undefined;
+}
+
+
 
 export const _map = <T, U>(array: T[], mapper: (item: T) => U): U[] => {
     let result: U[] = [];
@@ -92,6 +103,12 @@ export const _flat_map = <T, U>(array: T[], mapper: (item: T) => U[]): U[] => {
     return flatten(mappedArray, []);
 }
 
+function _removeDuplicates<T>(array: T[], compare: (a: T, b: T) => boolean = (a, b) => a === b): T[] {
+    return _filter(array, (item) => 
+       _find(array, (element) => compare(element, item)) === item
+    );
+}
+
 
 export const first = <T>(array: T[]): T => get_element(array, 0)
 
@@ -122,6 +139,18 @@ export const isOriginalArray = isArray
 
 
 // operators
+
+export const find = construct_simple_generic_procedure("find", 2,
+    <T>(array: T[], predicate: (item: T) => boolean): T | undefined => {
+        return _find(array, predicate)
+    }
+)
+
+export const remove_duplicates =  construct_simple_generic_procedure("remove_duplicates", 2,
+    <T>(array: T[], compare: (a: T, b: T) => boolean): T[] => {
+        return _removeDuplicates(array, compare)
+    }
+)
 
 export const filter = construct_simple_generic_procedure("filter", 2,
     <T>(array: T[], predicate: (item: T) => boolean): T[] => {
@@ -175,3 +204,11 @@ define_generic_procedure_handler(for_each, match_args(is_better_set, isArrowFunc
 define_generic_procedure_handler(flat_map, match_args(is_better_set, isArrowFunction), (set: BetterSet<any>, mapper) => {
     return set.flat_map(mapper)
 })
+
+define_generic_procedure_handler(remove_duplicates, match_args(is_better_set), (set: BetterSet<any>, compare) => {
+    return set.remove_duplicates(compare)
+}) 
+
+define_generic_procedure_handler(find, match_args(is_better_set, isArrowFunction), (set: BetterSet<any>, predicate) => {
+    return set.find(predicate)
+}) 

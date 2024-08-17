@@ -67,6 +67,14 @@ export class BetterSet<T> {
     reduce(reducer: (acc: T, value: T) => T, initial: T): T{
         return [...this.meta_data.values()].reduce(reducer, initial)
     }
+
+    find(predicate: (value: T) => boolean): T | undefined{
+        return [...this.meta_data.values()].find(predicate)
+    } 
+
+    remove_duplicates(compare: (a: T, b: T) => boolean): BetterSet<T>{
+        return new BetterSet(new Map([...this.meta_data].filter(([key, value]) => !this.meta_data.has(key))), this.compara_by)
+    }
 }
 
 export function is_better_set<T>(set: any): set is BetterSet<T>{
