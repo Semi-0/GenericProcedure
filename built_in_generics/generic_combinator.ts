@@ -71,6 +71,66 @@ function compose<T extends any[], R>(
   };
 }
 
+function andCompose<T extends any[], R>(
+  ...functions: ((...args: any[]) => boolean)[]
+): (...args: T) => boolean {
+  return (...args: any[]) => {
+    for (const func of functions){
+      if (!func(...args)){
+        return false
+      }
+    }
+    return true
+  }
+}
+
+function orCompose<T extends any[], R>(
+  ...functions: ((...args: any[]) => boolean)[]
+): (...args: T) => boolean {
+  return (...args: any[]) => {
+    for (const func of functions){
+      if (func(...args)){
+        return true
+      }
+    }
+    return false
+  }
+}
+
+function andExecute<T extends any[], R>(
+  ...functions: ((...args: any[]) => any | boolean | undefined)[]
+): (...args: T) => R | false {
+  return (...args: any[]) => {
+    var lastFunc = functions[functions.length - 1];
+    for (const func of functions.slice(0, -1)){
+      const result = func(...args);
+      if (result === undefined){
+        return false
+      }
+      else if (result === false){
+        return false
+      }
+    }
+    return lastFunc(...args) as R
+  }
+}
+
+function orExecute<T extends any[], R>(
+  ...functions: ((...args: any[]) => any | boolean | undefined)[]
+): (...args: T) => R | false {
+  return (...args: any[]) => {
+    for (const func of functions){
+      const result = func(...args);
+      if (result !== undefined && result !== false){
+        return result as R
+      }
+    }
+    return false
+  }
+}
+
+
+
 
 function parallelCombine<T, U, V>(
   h: (x: T, y: U) => V,
@@ -179,5 +239,9 @@ export {
   parallelCombine,
   spreadCombine,
   discardArgument,
-  permuteArguments
+  permuteArguments,
+  andCompose,
+  orCompose,
+  andExecute,
+  orExecute
 }

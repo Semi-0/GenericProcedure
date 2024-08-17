@@ -4,6 +4,7 @@ import {  is_atom, is_null, is_number, is_string } from "./generic_predicates"
 import { is_array, filter, map, reduce } from "./generic_array"
 import { guard } from "./other_generic_helper"
 import { add_item, BetterSet, difference_set, is_better_set, merge_set, remove_item } from "./generic_better_set"
+import { compose, orCompose } from "./generic_combinator"
 
 
 export const add = construct_simple_generic_procedure(
@@ -106,3 +107,42 @@ define_generic_procedure_handler(is_equal,
         return a.length === b.length && a.every((x, i) => is_equal(x, b[i]))
     }
 )
+
+export const greater_than = construct_simple_generic_procedure(
+    "greater_than",
+    2,
+    (a: number, b: number) => {
+        return a > b
+    }
+)
+
+define_generic_procedure_handler(greater_than,  all_match(is_array), (a: any[], b: any[]) => {
+    return a.length > b.length
+}) 
+
+define_generic_procedure_handler(greater_than, all_match(is_better_set), (a: BetterSet<any>, b: BetterSet<any>) => {
+    return b.is_subset_of(a)
+})
+
+export const less_than = construct_simple_generic_procedure(
+    "less_than",
+    2,
+    (a: number, b: number) => {
+        return a < b
+    }
+) 
+
+define_generic_procedure_handler(less_than, all_match(is_better_set), (a: BetterSet<any>, b: BetterSet<any>) => {
+    return a.is_subset_of(b)
+}) 
+
+define_generic_procedure_handler(less_than, all_match(is_array), (a: any[], b: any[]) => {
+    return a.length < b.length
+})
+
+
+export const greater_than_or_equal = orCompose(greater_than, is_equal)
+
+export const less_than_or_equal = orCompose(less_than, is_equal)
+
+

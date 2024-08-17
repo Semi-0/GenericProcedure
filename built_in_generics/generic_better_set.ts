@@ -79,6 +79,24 @@ export class BetterSet<T> {
     to_array(): T[]{
         return [...this.meta_data.values()]
     }
+
+    has_all(set: BetterSet<T>): boolean{
+        for (const [key, value] of this.meta_data){
+            if (!set.has(value)){
+                return false
+            }
+        }
+        return true
+    }
+
+    is_subset_of(set: BetterSet<T>): boolean{
+       if ((this.get_length() > set.get_length()) && this.has_all(set)){
+         return false
+       }
+       else{
+         return true
+       }
+    }
 }
 
 export function is_better_set<T>(set: any): set is BetterSet<T>{

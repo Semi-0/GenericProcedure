@@ -1,6 +1,6 @@
 {
   "name": "generic-handler",
-  "version": "0.2.1",
+  "version": "0.2.1gi",
   "module": "index.ts",
   "devDependencies": {
     "@types/bun": "latest"
