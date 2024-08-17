@@ -72,8 +72,12 @@ export class BetterSet<T> {
         return [...this.meta_data.values()].find(predicate)
     } 
 
-    remove_duplicates(compare: (a: T, b: T) => boolean): BetterSet<T>{
-        return new BetterSet(new Map([...this.meta_data].filter(([key, value]) => !this.meta_data.has(key))), this.compara_by)
+    get_length(): number{
+        return this.meta_data.size
+    }
+
+    to_array(): T[]{
+        return [...this.meta_data.values()]
     }
 }
 

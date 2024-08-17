@@ -1,7 +1,7 @@
 import { findAncestor, isArrowFunction } from "typescript";
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure"
 import { match_args } from "../Predicates";
-import { BetterSet, is_better_set } from "./generic_better_set";
+import { BetterSet, construct_better_set, is_better_set } from "./generic_better_set";
 // only need to extend this four method to support map over custom array type
 
 // protocols
@@ -103,10 +103,11 @@ export const _flat_map = <T, U>(array: T[], mapper: (item: T) => U[]): U[] => {
     return flatten(mappedArray, []);
 }
 
-function _removeDuplicates<T>(array: T[], compare: (a: T, b: T) => boolean = (a, b) => a === b): T[] {
-    return _filter(array, (item) => 
-       _find(array, (element) => compare(element, item)) === item
-    );
+function _removeDuplicates<T>(array: T[], converter: (item: T) => string): T[] {
+    // @ts-ignore
+    // TODO: fix this
+    const set = construct_better_set(array, converter)
+    return set.to_array()
 }
 
 
@@ -147,8 +148,8 @@ export const find = construct_simple_generic_procedure("find", 2,
 )
 
 export const remove_duplicates =  construct_simple_generic_procedure("remove_duplicates", 2,
-    <T>(array: T[], compare: (a: T, b: T) => boolean): T[] => {
-        return _removeDuplicates(array, compare)
+    <T>(array: T[], converter: (item: T) => string): T[] => {
+        return _removeDuplicates(array, converter)
     }
 )
 
@@ -204,10 +205,6 @@ define_generic_procedure_handler(for_each, match_args(is_better_set, isArrowFunc
 define_generic_procedure_handler(flat_map, match_args(is_better_set, isArrowFunction), (set: BetterSet<any>, mapper) => {
     return set.flat_map(mapper)
 })
-
-define_generic_procedure_handler(remove_duplicates, match_args(is_better_set), (set: BetterSet<any>, compare) => {
-    return set.remove_duplicates(compare)
-}) 
 
 define_generic_procedure_handler(find, match_args(is_better_set, isArrowFunction), (set: BetterSet<any>, predicate) => {
     return set.find(predicate)

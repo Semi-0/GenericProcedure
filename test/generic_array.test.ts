@@ -106,3 +106,36 @@ describe('GenericArray', () => {
         expect(isEmpty([1])).toBe(false);
     });
 });
+
+import { remove_duplicates, find } from '../built_in_generics/generic_array';
+
+// Test for remove_duplicates function
+test('remove_duplicates', () => {
+    const arrayNumbers = [1, 2, 2, 3, 4, 4, 5];
+    const resultNumbers = remove_duplicates(arrayNumbers, (a) => a.toString());
+    expect(resultNumbers).toEqual([1, 2, 3, 4, 5]);
+
+    const arrayObjects = [{ id: 1 }, { id: 2 }, { id: 2 }, { id: 3 }];
+    const resultObjects = remove_duplicates(arrayObjects, (a) => {
+        return a.id.toString()
+    });
+    expect(resultObjects).toEqual([{ id: 1 }, { id: 2 }, { id: 3 }]);
+
+    const emptyArray: number[] = [];
+    const resultEmpty = remove_duplicates(emptyArray, (a) => a.toString());
+    expect(resultEmpty).toEqual([]);
+});
+
+// Test for find function
+test('find', () => {
+    const arrayNumbers = [1, 2, 3, 4, 5];
+    const resultGreaterThan3 = find(arrayNumbers, (item) => item > 3);
+    expect(resultGreaterThan3).toBe(4);
+
+    const resultGreaterThan5 = find(arrayNumbers, (item) => item > 5);
+    expect(resultGreaterThan5).toBeUndefined();
+
+    const arrayObjects = [{ id: 1 }, { id: 2 }, { id: 3 }];
+    const resultObjectId2 = find(arrayObjects, (item) => item.id === 2);
+    expect(resultObjectId2).toEqual({ id: 2 });
+});
