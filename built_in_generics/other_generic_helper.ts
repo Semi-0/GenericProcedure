@@ -1,7 +1,7 @@
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure";
 import { match_args, match_one_of_preds } from "../Predicates";
-import { isArray } from "./generic_array";
-import { isObject } from "./generic_predicates";
+import { is_array } from "./generic_array";
+import { is_object } from "./generic_predicates";
 
 export function guard(condition: boolean, else_branch: () => void): void {
     if (condition) {
@@ -16,7 +16,7 @@ export const copy = construct_simple_generic_procedure(
     1
 ) 
 
-define_generic_procedure_handler(copy, match_one_of_preds(isArray, isObject), (a: any[]) => {
+define_generic_procedure_handler(copy, match_one_of_preds(is_array, is_object), (a: any[]) => {
     return deepCopy(a)
 })
 

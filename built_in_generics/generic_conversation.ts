@@ -1,7 +1,7 @@
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure"
 import { match_args } from "../Predicates"
-import { isBoolean, isNull, isNumber, isObject } from "./generic_predicates"
-import { isArray } from "./generic_array"
+import { is_boolean, is_null, is_number,  is_object } from "./generic_predicates"
+import { is_array } from "./generic_array"
 
 export const to_string = construct_simple_generic_procedure(
     "to_string",
@@ -14,7 +14,7 @@ export const to_string = construct_simple_generic_procedure(
     }
 )
 
-define_generic_procedure_handler(to_string, match_args(isNull), (a: null | undefined) => {
+define_generic_procedure_handler(to_string, match_args(is_null), (a: null | undefined) => {
     if (a === null){
         return "null"
     }
@@ -23,19 +23,19 @@ define_generic_procedure_handler(to_string, match_args(isNull), (a: null | undef
     }
 })
 
-define_generic_procedure_handler(to_string, match_args(isBoolean), (a: boolean) => {
+define_generic_procedure_handler(to_string, match_args(is_boolean), (a: boolean) => {
     return a.toString()
 })
 
-define_generic_procedure_handler(to_string, match_args(isNumber), (a: number) => {
+define_generic_procedure_handler(to_string, match_args(is_number), (a: number) => {
     return a.toString()
 })
 
-define_generic_procedure_handler(to_string, match_args(isArray), (a: any[]) => {
+define_generic_procedure_handler(to_string, match_args(is_array), (a: any[]) => {
     return "[" + a.map((x) => to_string(x)).join(", ") + "]"
 })
 
-define_generic_procedure_handler(to_string, match_args(isObject), (a: object) => {
+define_generic_procedure_handler(to_string, match_args(is_object), (a: object) => {
     return JSON.stringify(a)
 })
 

@@ -3,7 +3,7 @@
 import { define_generic_procedure_handler } from "../GenericProcedure"
 import { match_args } from "../Predicates"
 import { add, subtract } from "./generic_arithmetic"
-import { isAtom } from "./generic_predicates"
+import { is_atom } from "./generic_predicates"
 
 export class BetterSet<T> {
     private meta_data: Map<string, any> = new Map()

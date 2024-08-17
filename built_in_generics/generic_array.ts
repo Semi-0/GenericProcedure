@@ -22,7 +22,7 @@ export const get_length = construct_simple_generic_procedure("get_length", 1,
     <T>(array: T[]): number => array.length
 )
 
-export const isArray = construct_simple_generic_procedure("isArray", 1,
+export const is_array = construct_simple_generic_procedure("isArray", 1,
     <T>(obj: any): obj is T[] => Array.isArray(obj)
 )
 
@@ -92,7 +92,7 @@ export const _flat_map = <T, U>(array: T[], mapper: (item: T) => U[]): U[] => {
         if (get_length(arr) === 0) return acc;
         const fst = first(arr)
         const rst = rest(arr)   
-        if (isArray(fst)) {
+        if (is_array(fst)) {
             return flatten([...fst, ...rst], acc);
         } else {
             return flatten(rst, push(acc, fst));
@@ -129,14 +129,14 @@ export const construct = <T>(item: T, ...rest: T[]): T[] => {
 }
 
 export const isPair = <T>(array: T[]): boolean => 
-    isArray(array) && get_length(array) > 0
+    is_array(array) && get_length(array) > 0
 
 export const isEmpty = <T>(array: T[]): boolean => 
     get_length(array) === 0
 
 
 
-export const isOriginalArray = isArray
+export const isOriginalArray = is_array
 
 
 // operators

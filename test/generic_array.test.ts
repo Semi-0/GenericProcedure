@@ -1,4 +1,4 @@
-import { get_element, set_element, get_length, isArray, push, slice, filter, map, reduce, first, rest, second, third, construct, isPair, isEmpty } from '../built_in_generics/generic_array';
+import { get_element, set_element, get_length, is_array, push, slice, filter, map, reduce, first, rest, second, third, construct, isPair, isEmpty } from '../built_in_generics/generic_array';
 import { test, expect, describe } from "bun:test";
 
 // Helper function to run tests
@@ -27,10 +27,10 @@ describe('GenericArray', () => {
 
     // Test for isArray function
     test('isArray', () => {
-        expect(isArray([])).toBe(true);
-        expect(isArray([1, 2, 3])).toBe(true);
-        expect(isArray({})).toBe(false);
-        expect(isArray('not an array')).toBe(false);
+        expect(is_array([])).toBe(true);
+        expect(is_array([1, 2, 3])).toBe(true);
+        expect(is_array({})).toBe(false);
+        expect(is_array('not an array')).toBe(false);
     });
 
     // Test for push function
