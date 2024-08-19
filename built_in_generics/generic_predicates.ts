@@ -14,7 +14,11 @@ export const is_object = (a: any): a is object => {
     return typeof a === "object" && a !== null
 }
 
-export const is_atom = (a: any): a is string | number | boolean => {
+export const is_atom = construct_simple_generic_procedure("is_atom", 1, (a: any) => {
+    return _is_atom(a)
+})
+
+const _is_atom = (a: any): a is string | number | boolean => {
   if (is_string(a) || is_number(a) || is_boolean(a) || (is_object(a) && !is_array(a))) {
     return true
   }
