@@ -2,6 +2,7 @@
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure"
 import { all_match, match_args } from "../Predicates"
 import { is_array } from "./generic_array"
+import { is_better_set } from "./generic_better_set"
 // helper functions 
 
 
@@ -16,6 +17,10 @@ export const is_object = (a: any): a is object => {
 
 export const is_atom = construct_simple_generic_procedure("is_atom", 1, (a: any) => {
     return _is_atom(a)
+})
+
+define_generic_procedure_handler(is_atom, is_better_set, (a: any) => {
+    return false
 })
 
 const _is_atom = (a: any): a is string | number | boolean => {
