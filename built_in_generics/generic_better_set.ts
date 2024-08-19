@@ -97,6 +97,10 @@ export class BetterSet<T> {
          return true
        }
     }
+
+    get_value(index: number): T{
+        return [...this.meta_data.values()][index]
+    } 
 }
 
 export function is_better_set<T>(set: any): set is BetterSet<T>{
