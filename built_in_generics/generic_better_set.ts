@@ -1,7 +1,7 @@
 // a better set that is more flexible and powerful than the built-in set
 
 import { define_generic_procedure_handler } from "../GenericProcedure"
-import { match_args } from "../Predicates"
+import { match_args, register_predicate } from "../Predicates"
 import { add, subtract } from "./generic_arithmetic"
 import { is_atom } from "./generic_predicates"
 
@@ -103,10 +103,7 @@ export class BetterSet<T> {
     } 
 }
 
-export function is_better_set<T>(set: any): set is BetterSet<T>{
-    return set instanceof BetterSet
-}
-
+export const is_better_set = register_predicate("is_better_set", (a: any) => a instanceof BetterSet)
 export function construct_better_set<T>(values: T[], compara_by: (a: T) => string): BetterSet<T>{
     var meta_data = new Map<string, T>()
     for (const value of values){

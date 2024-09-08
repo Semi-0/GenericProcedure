@@ -1,34 +1,70 @@
 // TODO: PREDICATE CAN BE MORE EFFICIENT WITH A_TRIE & INTEGRATION INTO GENERIC STORE
 
-
-
-import { first } from './built_in_generics/generic_array';
+import { Applicability } from './Applicatability';
 import { guard } from './built_in_generics/other_generic_helper';
-import { SimpleDispatchStore } from './DispatchStore';
 
-export class PredicateStore {
-    private store: SimpleDispatchStore = new SimpleDispatchStore();
-    private predicateNames: Set<string> = new Set();
 
-    clear() {
-        this.store = new SimpleDispatchStore();
-        this.predicateNames.clear();
+export class Predicate{
+    name: string
+    procedure: (...args: any) => any
+    side_note: string 
+
+    constructor( name: string, procedure: (...args: any) => any, side_note: string = ""){
+        this.name = name
+        this.procedure = procedure
+        this.side_note = side_note
+    }
+
+    execute(...args: any[]){
+        return this.procedure(...args)
     } 
 
-    register(name: string, predicate: (args: any) => boolean) {
-        this.store.add_handler(
-            (args) => args === name,
-            (args) => predicate(args)
-        );
-        this.predicateNames.add(name);
+    summary(){
+        return  this.name + " " + this.side_note
+    } 
+
+    summary_with_args(...args: any){
+        return  this.name + " " + this.side_note + " args: " + args + " result: " + this.execute(args)
+    }
+
+    equals(other: Predicate){
+        return this.name === other.name && this.procedure === other.procedure && this.side_note === other.side_note
+    }
+
+}
+
+
+
+export class PredicateStore {
+  
+    private predicates: Predicate[] = []
+
+    constructor(){
+        this.predicates = []
+    }
+
+
+    register(predicate: Predicate) {
+        if (this.has(predicate.procedure)) {
+            throw new Error(`Predicate ${predicate.name} already registered`);
+        }
+        this.predicates.push(predicate);
     }
 
     get(name: string): (arg: any) => boolean {
-        const handler = this.store.get_handler(name);
+        const handler = this.predicates.find(predicate => predicate.name === name);
         if (!handler) {
             throw new Error(`Predicate ${name} not found`);
         }
-        return handler;
+        return handler.procedure;
+    }
+
+    getFromProcedure(procedure: (arg: any) => boolean): Predicate | undefined {
+        return this.predicates.find(predicate => predicate.procedure === procedure);
+    }
+
+    has(predicate: (arg: any) => boolean) {
+        return this.predicates.some(pred => pred.procedure === predicate)
     }
 
     execute(name: string, args: any) {
@@ -36,7 +72,7 @@ export class PredicateStore {
     }
 
     get_all_predicates() {
-        return Array.from(this.predicateNames);
+        return this.predicates;
     }
 
     display_all() {
@@ -45,28 +81,27 @@ export class PredicateStore {
 
     search(name: string) {
         const result = this.get_all_predicates()
-            .filter(predicate => predicate.includes(name))
+            .filter(predicate => predicate.name === name)
             .sort();
         console.log(result);
     }
 }
 
-let defaultPredicateStore = new PredicateStore();
+export var defaultPredicateStore = new PredicateStore();
 
-export function get_default_predicate_store() {
-    return defaultPredicateStore;
+
+export function guarantee_default_predicate_store_is_inited(){
+    if (defaultPredicateStore === undefined){
+        defaultPredicateStore = new PredicateStore()
+    }
 }
 
-export function set_default_predicate_store(store: PredicateStore) {
-    defaultPredicateStore = store;
-}
 
-export function clear_predicate_store() {
-    defaultPredicateStore.clear();
-}
 
-export function register_predicate(name: string, predicate: (args: any) => boolean) {
-    defaultPredicateStore.register(name, predicate);
+export function register_predicate(name: string, predicate: (...args: any) => boolean) {
+    guarantee_default_predicate_store_is_inited()
+    defaultPredicateStore.register(new Predicate(name, predicate));
+    return predicate
 }
 
 export function get_predicate(name: string): ((arg: any) => boolean) | undefined {
@@ -78,7 +113,7 @@ export function get_predicates() {
 }
 
 export function filter_predicates(predicate: (name: string) => boolean) {
-    return defaultPredicateStore.get_all_predicates().filter(predicate);
+    return defaultPredicateStore.get_all_predicates().filter((pred) => predicate(pred.name) );
 }
 
 export function execute_predicate(name: string, args: any) {
@@ -93,39 +128,49 @@ export function search_predicate(name: string) {
     defaultPredicateStore.search(name);
 }
 
-export function match_preds(predicates: string[]): (...args: any) => boolean{
-    return (...args: any) => {
-       if(predicates.length !== args.length){
-        // @ts-ignore
-        throw new Error("Predicates and arguments length mismatch", { cause: { predicates, args } })
-       }
-       else{
-        return predicates.every((predicate, index) => execute_predicate(predicate, args[index]))
-       }
-    }
+
+
+
+function find_predicates_and_guarantee_registered(preds: ((arg: any) => boolean)[]): Predicate[] {
+    const predicates = preds.map(arg_critic => defaultPredicateStore.getFromProcedure(arg_critic))
+
+    guard(predicates.every(predicate => predicate !== undefined), () => {
+        const unregistered_predicates = preds.filter(arg_critic => defaultPredicateStore.getFromProcedure(arg_critic) === undefined).toString()
+        throw new Error("find predicates has not been registered, predicate: " + unregistered_predicates);
+    })
+    //@ts-ignore
+    return predicates
 }
 
-export function match_args(...arg_critics: ((arg: any) => boolean)[]): (...args: any) => boolean{
-    return (...args: any) => args.every((arg, index) => arg_critics[index](arg))
+
+
+export function match_args(...preds: ((arg: any) => boolean)[]): Applicability {
+    //@ts-ignore`
+    return new Applicability("match_args", find_predicates_and_guarantee_registered(preds), 
+        (preds: Predicate[]) =>
+            (...args: any[]) => 
+                preds.every((pred, index) => pred.execute(args[index])))
 }
 
-export function match_one_of_preds(...predicates: ((args: any) => boolean)[]){
-    return (...args: any) => { 
-        guard(args.length != 1, () => {
-            throw new Error("match_one_of_preds: expected at least two arguments, but got " + args.length)
-        })
-        return predicates.some((predicate, index) => predicate(first(args)))
-    }
+
+
+export function match_one_of_preds(...preds: ((arg: any) => boolean)[]): Applicability {
+    return new Applicability("match_one_of_preds", find_predicates_and_guarantee_registered(preds), (preds: Predicate[]) =>
+        (arg: any) => preds.some(pred => pred.execute(arg)))
 }
 
-export function one_of_args_match(arg_critic: ((arg: any) => boolean)): (...args: any) => boolean{
-    return (...args: any) => args.some((arg, index) => arg_critic(arg))
+export function one_of_args_match(pred: ((arg: any) => boolean)): Applicability {
+    return new Applicability("one_of_args_match", find_predicates_and_guarantee_registered([pred]), (preds: Predicate[]) =>
+        (...args: any[]) => args.some(arg => preds[0].execute(arg)))
 }
 
-export function all_match(arg_critic: ((arg: any) => boolean)): (...args: any) => boolean{
-    return (...args: any) => args.every((arg, index) => arg_critic(arg))
+export function all_match(pred: ((arg: any) => boolean)): Applicability {
+    return new Applicability("all_match", find_predicates_and_guarantee_registered([pred]), (preds: Predicate[]) =>
+        (...args: any[]) => args.every(arg => preds[0].execute(arg)))
 } 
 
 
+export function force_load_predicate(){
 
+}
 //TGDO: GENERIC PREDICATE: 1. ONE OF  2. BOTH  3. AND  4. OR 5. ANY 6. CONSTANT

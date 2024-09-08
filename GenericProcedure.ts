@@ -2,28 +2,15 @@ import { set_metaData, get_metaData, get_default_store, set_store } from "./Gene
 import { GenericProcedureMetadata } from "./GenericProcedureMetadata";
 import type { Int } from "./types";
 import { DispatchStore, SimpleDispatchStore } from "./DispatchStore";
-import { get_predicate } from "./Predicates";
+import { get_predicate, Predicate } from "./Predicates";
+import { Applicability } from "./Applicatability";
 
 // idea: for a new ide, maybe instead of consider everything linear, it should always seperatable and reorganizable in blocks(and import exportable)
 
-export function define_generic_procedure_handler(procedure: (...args: any) => any, predicate: ((...args: any) => any) | string, handler: (...args: any) => any): void{
+export function define_generic_procedure_handler(procedure: (...args: any) => any, applicability: Applicability, handler: (...args: any) => any): void{
     const metaData = get_metaData(procedure)
     if(metaData !== undefined){
-        if (typeof predicate === "string"){
-            const predicate_function = get_predicate(predicate)
-            if(predicate_function !== undefined){
-                metaData.addHandler(predicate_function, handler)
-            }
-            else{
-                throw new Error("Predicate not found")
-            }
-        }
-        else if (typeof predicate === "function"){
-            metaData.addHandler(predicate, handler)
-        }
-        else{
-            throw new Error("unknown predicate type")
-        }
+        metaData.addHandler(applicability, handler)
     }
     else{
         throw new Error("GenericProcedureMetadata not found")
@@ -75,22 +62,3 @@ export function construct_simple_generic_procedure(name: string, arity: Int, def
     return construct_generic_procedure(() => new SimpleDispatchStore())(name, arity, defaultHandler)
 }
 
-export function search_handler(procedure: (...args: any) => any, criteria: (...args: any) => boolean){
-    const metaData = get_metaData(procedure)
-    if(metaData !== undefined){
-        return metaData.dispatchStore.get_handler(criteria)?.toString()
-    }
-    else{
-        throw new Error("GenericProcedureMetadata not found")
-    }
-}
-
-export function get_all_critics(procedure: (...args: any) => any){
-    const metaData = get_metaData(procedure)
-    if(metaData !== undefined){
-        return metaData.dispatchStore.get_all_critics()
-    }
-    else{
-        throw new Error("GenericProcedureMetadata not found")
-    }
-}

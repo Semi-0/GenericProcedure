@@ -1,6 +1,6 @@
 import { head } from "fp-ts/lib/ReadonlyNonEmptyArray";
 import { guard } from "./other_generic_helper";
-import { first, rest } from "./generic_array";
+
 
 
 
@@ -40,9 +40,9 @@ function spread<T extends any[], R>(
             return results;
         }
         else{
-            const exec_func = first(functions);
+            const exec_func = functions[0];
             const arity = getArity(exec_func);  
-            return spreadResult( [...results, exec_func(...inputs.slice(0, arity))], inputs.slice(arity), rest(functions));
+            return spreadResult( [...results, exec_func(...inputs.slice(0, arity))], inputs.slice(arity), functions.slice(1));
         }
    }
 

@@ -1,29 +1,21 @@
-export class Rule{
-    applicability: (...args: any) => boolean
-    handler: (...args: any) => any
+import { Applicability } from "./Applicatability"
+import { Rule } from "./Rule"
 
 
-    constructor(applicability: (...args: any) => boolean, handler: (...args: any) => any){
-        this.applicability = applicability
-        this.handler = handler
-    }
 
-    set_handler(handler: (...args: any) => any){
-        this.handler = handler
-    }
 
-    set_applicability(applicability: (...args: any) => boolean){
-        this.applicability = applicability
-    }
-}
+
+
 
 export interface DispatchStore{
+   
     get_handler: (...args: any) => ((...args: any) => any) | null
-    add_handler: (applicability: (...args: any) => boolean, handler: (...args: any) => any) => void
-    remove_handler: (applicability: (...args: any) => boolean) => void
+    add_handler: (applicability: Applicability, handler: (...args: any) => any) => void
+    remove_handler: (applicability: Applicability) => void
     get_default_handler: () => ((...args: any) => any)
     set_default_handler: (handler: (...args: any) => any) => void
-    get_all_critics: () => ((...args: any) => boolean)[]
+    summary_rules: (...args: any) => string[],
+    summary_rules_with_args: (...args: any[]) => string[]
 }
 
 
@@ -36,12 +28,16 @@ export class SimpleDispatchStore implements DispatchStore{
 
     constructor(){}
 
-    get_all_critics(){
-        return this.rules.map(rule => rule.applicability)
+    summary_rules(): string[]{
+        return this.rules.map(rule => rule.summary())
+    }
+    // for debugging
+    summary_rules_with_args(...args: any[]) :string[]{
+        return this.rules.map(rule => rule.summary_with_args(...args))
     }
 
     get_handler(...args: any) : ((...args: any) => any) | null {
-       const rule = this.rules.find(rule => rule.applicability(...args))
+       const rule = this.rules.find(rule => rule.applicability.execute(...args))
        if(rule){
         return rule.handler
        }
@@ -50,8 +46,8 @@ export class SimpleDispatchStore implements DispatchStore{
        }
     }
 
-    add_handler(applicability: (...args: any) => boolean, handler: (...args: any) => any){
-        const existed = this.rules.find(rule => rule.applicability === applicability)
+    add_handler(applicability: Applicability, handler: (...args: any) => any){
+        const existed = this.rules.find(rule => rule.applicability.equals(applicability))
         if(existed){
             existed.set_handler(handler)
         }
@@ -60,8 +56,8 @@ export class SimpleDispatchStore implements DispatchStore{
         }
     }
 
-    remove_handler(applicability: (...args: any) => boolean){
-        this.rules = this.rules.filter(rule => rule.applicability !== applicability)
+    remove_handler(applicability: Applicability){
+        this.rules = this.rules.filter(rule => !rule.applicability.equals(applicability))
     }
 
     get_default_handler(){

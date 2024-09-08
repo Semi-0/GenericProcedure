@@ -1,6 +1,7 @@
 import type { Int } from "./types";
 import { SimpleDispatchStore } from "./DispatchStore";
 import { DispatchStore } from "./DispatchStore";
+import { Applicability } from "./Applicatability";
 /**
  * Class representing the metadata for a generic procedure.
  */
@@ -29,7 +30,7 @@ export class GenericProcedureMetadata {
      * @param predicate - A function to determine if the handler should be used.
      * @param handler - The handler function to be used if the predicate matches.
      */
-    public addHandler(predicate: (...args: any) => boolean, handler: (...args: any) => any): void {
-        this.dispatchStore.add_handler(predicate, handler)
+    public addHandler(applicability: Applicability, handler: (...args: any) => any): void {
+        this.dispatchStore.add_handler(applicability, handler)
     }
 }

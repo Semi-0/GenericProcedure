@@ -1,7 +1,6 @@
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure"
 import { match_args } from "../Predicates"
-import { is_boolean, is_null, is_number,  is_object } from "./generic_predicates"
-import { is_array } from "./generic_array"
+import { is_boolean, is_null, is_number,  is_object, is_array } from "./generic_predicates"
 
 export const to_string = construct_simple_generic_procedure(
     "to_string",
