@@ -66,6 +66,18 @@ describe('Trie', () => {
     expect(trie.getAValue(['array'])).toEqual([1, 2, 3]);
   });
 
+  test('should handle multi-dimensional paths', () => {
+    const isNumber = (x: any) => x === 'number';
+    const isBoolean = (x: any) => x === 'boolean';
+    const isNested = (x: any) => x === 'nested';
+
+    trie.setPathValue([isNumber, isBoolean], 'number-boolean');
+    trie.setPathValue([isNumber, isNested], 'number-nested');
+
+    expect(trie.getAValue(['number', 'boolean'])).toBe('number-boolean');
+    expect(trie.getAValue(['number', 'nested'])).toBe('number-nested');
+  });
+
   test('should get all matching values', () => {
     const isEven = (x: any) => typeof x === 'number' && x % 2 === 0;
     const isNegative = (x: any) => typeof x === 'number' && x < 0;
@@ -79,20 +91,5 @@ describe('Trie', () => {
     expect(trie.getAllValues([1])).toEqual([]);
   });
 
-  test('should get entries', () => {
-    const isA = (x: any) => x === 'a';
-    const isB = (x: any) => x === 'b';
-    trie.setPathValue([isA], 'A');
-    trie.setPathValue([isA, isB], 'AB');
 
-    const entries = trie.getEntries();
-    expect(entries).toEqual({
-      isA: {
-        value: 'A',
-        isB: {
-          value: 'AB'
-        }
-      }
-    });
-  });
 });

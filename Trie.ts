@@ -65,6 +65,7 @@ export class Trie {
     }
   
     private getAValueBySearching(features: any[]): any {
+      // TODO: this is wrong
       const search = (trie: Trie, features: any[], succeed: (value: any, fail: () => any) => any, fail: () => any): any => {
         if (features.length > 0) {
           return this.tryEdges(trie.edgeAlist, features[0],
@@ -125,32 +126,3 @@ export class Trie {
     }
   }
   
-  // Example usage:
-//   const aTrie = new Trie();
-  
-//   const negativeNumber = (x: any) => typeof x === 'number' && x < 0;
-//   const nn = aTrie.addEdge(negativeNumber);
-  
-//   const isSymbol = (x: any) => typeof x === 'symbol';
-//   const s = aTrie.addEdge(isSymbol);
-  
-//   const evenNumber = (x: any) => typeof x === 'number' && x % 2 === 0;
-//   const e = aTrie.addEdge(evenNumber);
-  
-//   const isNumber = (x: any) => typeof x === 'number';
-//   const sn = s.addEdge(isNumber);
-  
-//   const ss = s.addEdge(isSymbol);
-  
-//   s.setValue(['symbol']);
-//   ss.setValue(['symbol', 'symbol']);
-//   sn.setValue(['symbol', 'number']);
-//   nn.setValue(['negative-number']);
-//   e.setValue(['even-number']);
-  
-//   console.log(aTrie.getAValue([Symbol('a'), 1])); // Throws error: Unable to match features
-//   console.log(aTrie.getAValue([Symbol('a'), Symbol('b')])); // ['symbol', 'symbol']
-//   console.log(aTrie.getAValue([Symbol('c')])); // ['symbol']
-//   console.log(aTrie.getAllValues([3])); // []
-//   console.log(aTrie.getAllValues([Symbol('a'), Symbol('b')])); // [['symbol', 'symbol']]
-//   console.log(aTrie.getAllValues([-4])); // [['even-number'], ['negative-number']]
