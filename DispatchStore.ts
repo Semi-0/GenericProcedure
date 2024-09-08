@@ -66,7 +66,7 @@ export class SimpleDispatchStore implements DispatchStore{
 }
 
 
-
+// NOT WORKING YET
 export class CachedDispatchStore extends SimpleDispatchStore {
     private cache: Map<string, any> = new Map();
     
@@ -79,14 +79,23 @@ export class CachedDispatchStore extends SimpleDispatchStore {
     get_handler(...args: any): ((...args: any) => any) | null {
         const hashKey = this.hashValue(args);
         if (this.cache.has(hashKey)) {
+            console.log('get cache', hashKey, this.cache.get(hashKey))
             return this.cache.get(hashKey);
         }
 
         const handler = super.get_handler(...args);
         if (handler) {
+            console.log('set cache', hashKey, handler)
             this.cache.set(hashKey, handler);
         }
         return handler;
+    }
+
+    is_cached(args: any){
+        
+        const hashKey = this.hashValue(args);
+        console.log(hashKey, this.cache.has(hashKey))
+        return this.cache.has(hashKey)
     }
 
     add_handler(applicability: Applicability, handler: (...args: any) => any) {

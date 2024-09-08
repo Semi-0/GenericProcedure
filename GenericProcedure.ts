@@ -1,7 +1,7 @@
 import { set_metaData, get_metaData, get_default_store, set_store } from "./GenericStore";
 import { GenericProcedureMetadata } from "./GenericProcedureMetadata";
 import type { Int } from "./types";
-import { DispatchStore, SimpleDispatchStore } from "./DispatchStore";
+import { CachedDispatchStore, DispatchStore, SimpleDispatchStore } from "./DispatchStore";
 import { get_predicate, Predicate } from "./Predicates";
 import { Applicability } from "./Applicatability";
 
@@ -60,5 +60,9 @@ export function constant_generic_procedure_handler(constant: () => any){
 
 export function construct_simple_generic_procedure(name: string, arity: Int, defaultHandler: ((...args: any) => any) | undefined = undefined){
     return construct_generic_procedure(() => new SimpleDispatchStore())(name, arity, defaultHandler)
+}
+
+export function construct_cached_generic_procedure(name: string, arity: Int, defaultHandler: ((...args: any) => any) | undefined = undefined){
+    return construct_generic_procedure(() => new CachedDispatchStore())(name, arity, defaultHandler)
 }
 
