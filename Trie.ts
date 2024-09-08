@@ -1,3 +1,5 @@
+//TODO: NOT WORKING YET
+
 export class Trie {
     private value: any;
     private edgeAlist: [((x: any) => boolean), Trie][];

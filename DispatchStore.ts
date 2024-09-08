@@ -101,24 +101,70 @@ export class CachedDispatchStore extends SimpleDispatchStore {
 }
 
 
-// export class TrieDispatchStore extends SimpleDispatchStore{
-//     private trie: Trie
+// export class PersistentLocalCachedDispatchStore extends SimpleDispatchStore {
+//     private mongoClient: MongoClient;
+//     private db: any;
+//     private collection: any;
 
-//     constructor(){
-//         super()
-//         this.trie = new Trie()
+//     constructor() {
+//         super();
+//         this.mongoClient = new MongoClient('mongodb://localhost:27017');
+//         this.mongoClient.connect().then(() => {
+//             this.db = this.mongoClient.db('dispatchStore');
+//             this.collection = this.db.collection('cache');
+//         });
 //     }
 
-//     add_handler(applicability: Applicability, handler: (...args: any) => any): void {
-//         super.add_handler(applicability, handler)
-//         this.trie.set([applicability.name,  ...applicability.predicates.map(predicate => predicate.name)], handler)
+//     private async hashValue(value: any): Promise<string> {
+//         const stringValue = JSON.stringify(value);
+//         const hash = CryptoJS.SHA256(stringValue);
+//         return hash.toString(CryptoJS.enc.Hex);
 //     }
 
-//     get_handler(...args: any): ((...args: any) => any) | null {
-//         const hashKey = this.hashValue(args);
-//         if (this.cache.has(hashKey)) {
-//             return this.cache.get(hashKey);
+//     async get_handler(...args: any): Promise<((...args: any) => any) | null> {
+//         const hashKey = await this.hashValue(args);
+//         const cachedHandler = await this.collection.findOne({ hashKey });
+//         if (cachedHandler) {
+//             return cachedHandler.handler;
 //         }
+
+//         const handler = super.get_handler(...args);
+//         if (handler) {
+//             await this.collection.insertOne({ hashKey, handler });
+//         }
+//         return handler;
+//     }
+
+//     async add_handler(applicability: Applicability, handler: (...args: any) => any) {
+//         await super.add_handler(applicability, handler);
+//         await this.collection.deleteMany({}); // Clear cache when a new handler is added
+//     }
+
+//     async remove_handler(applicability: Applicability) {
+//         await super.remove_handler(applicability);
+//         await this.collection.deleteMany({}); // Clear cache when a handler is removed
 //     }
 // }
+
+
+// // export class TrieDispatchStore extends SimpleDispatchStore{
+// //     private trie: Trie
+
+// //     constructor(){
+// //         super()
+// //         this.trie = new Trie()
+// //     }
+
+// //     add_handler(applicability: Applicability, handler: (...args: any) => any): void {
+// //         super.add_handler(applicability, handler)
+// //         this.trie.set([applicability.name,  ...applicability.predicates.map(predicate => predicate.name)], handler)
+// //     }
+
+// //     get_handler(...args: any): ((...args: any) => any) | null {
+// //         const hashKey = this.hashValue(args);
+// //         if (this.cache.has(hashKey)) {
+// //             return this.cache.get(hashKey);
+// //         }
+// //     }
+// // }
 
