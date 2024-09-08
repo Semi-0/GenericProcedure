@@ -1,7 +1,7 @@
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from '../GenericProcedure';
 import {test, expect, describe, beforeEach, mock, jest} from "bun:test";
 
-import { register_predicate, execute_predicate, get_predicate,  match_args, clear_predicate_store, match_preds } from '../Predicates';
+import { register_predicate, execute_predicate, get_predicate,  match_args, clear_predicate_store } from '../Predicates';
 
 
 describe('Predicates', () => {
@@ -26,8 +26,8 @@ describe('Predicates', () => {
     });
 
     test('should execute a predicate', () => {
-        const predicate = jest.fn((arg: any) => arg === 42);
-        register_predicate('testPredicate', predicate);
+        
+        const predicate = register_predicate('testPredicate', jest.fn((arg: any) => arg === 42) );
 
         const result1 = execute_predicate('testPredicate', 42);
         const result2 = execute_predicate('testPredicate', 42);
@@ -41,28 +41,7 @@ describe('Predicates', () => {
         expect(() => execute_predicate('nonExistentPredicate', 42)).toThrow('Predicate nonExistentPredicate not found');
     });
 
-    test('should match arguments with predicates', () => {
-        const predicate1 = (arg: any) => arg === 42;
-        const predicate2 = (arg: any) => arg === 'test';
 
-        register_predicate('42?', predicate1);
-        register_predicate('test?', predicate2);
-
-        const match = match_preds(["42?", "test?"]);
-
-        expect(match(42, 'test')).toBe(true);
-        expect(match(42, 'fail')).toBe(false);
-        expect(match(41, 'test')).toBe(false);
-    });
-
-    test('should throw an error if predicates and arguments length mismatch', () => {
-        const predicate1 = (arg: any) => arg === 42;
-        register_predicate('42?', predicate1);
-
-        const match = match_preds(["42?"]);
-
-        expect(() => match(42, 'extraArg')).toThrow('Predicates and arguments length mismatch');
-    });
 });
 
 describe('generic_procedure', () => {
@@ -83,8 +62,8 @@ describe('generic_procedure', () => {
 
     test('should execute specific handler when predicate matches', () => {
         const specificHandler = jest.fn((...args) => "specific response");
-        const predicate = jest.fn((...args) => args[0] === 42);
-        define_generic_procedure_handler(testFunc, predicate, specificHandler);
+        const predicate = register_predicate('testPredicate', jest.fn((...args) => args[0] === 42) );
+        define_generic_procedure_handler(testFunc, match_args(predicate), specificHandler);
 
         const result = testFunc(42);
         expect(predicate).toHaveBeenCalledWith(42);
@@ -98,11 +77,11 @@ describe('generic_procedure', () => {
         const specificHandler1 = jest.fn((...args) => "response from handler 1");
         const specificHandler2 = jest.fn((...args) => "response from handler 2");
 
-        const predicate1 = jest.fn((...args) => args[0] < 50);
-        const predicate2 = jest.fn((...args) => args[0] >= 50);
+        const predicate1 = register_predicate('testPredicate1', jest.fn((...args) => args[0] < 50) );
+        const predicate2 = register_predicate('testPredicate2', jest.fn((...args) => args[0] >= 50) );
 
-        define_generic_procedure_handler(anotherFunc, predicate1, specificHandler1);
-        define_generic_procedure_handler(anotherFunc, predicate2, specificHandler2);
+        define_generic_procedure_handler(anotherFunc, match_args(predicate1), specificHandler1);
+        define_generic_procedure_handler(anotherFunc, match_args(predicate2), specificHandler2);
 
         const result1 = anotherFunc(30);
         const result2 = anotherFunc(60);
@@ -122,11 +101,11 @@ describe('generic_procedure', () => {
         const handler1 = jest.fn(() => "response from handler 1");
         const handler2 = jest.fn(() => "response from handler 2");
         
-        const predicate1 = jest.fn(() => true);  // This will always match
-        const predicate2 = jest.fn(() => true);  // This will also always match
+        const predicate1 = register_predicate('testPredicate1', jest.fn(() => true) );  // This will always match
+        const predicate2 = register_predicate('testPredicate2', jest.fn(() => true) );  // This will also always match
         
-        define_generic_procedure_handler(testFunc, predicate1, handler1);
-        define_generic_procedure_handler(testFunc, predicate2, handler2);
+        define_generic_procedure_handler(testFunc, match_args(predicate1), handler1);
+        define_generic_procedure_handler(testFunc, match_args(predicate2), handler2);
         
         const result = testFunc(42);
         

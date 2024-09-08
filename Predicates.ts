@@ -85,6 +85,15 @@ export class PredicateStore {
             .sort();
         console.log(result);
     }
+
+    clear(){
+        // only for testing!!!
+        this.predicates = []
+    }
+}
+
+export function clear_predicate_store(){
+    defaultPredicateStore.clear()
 }
 
 export var defaultPredicateStore = new PredicateStore();

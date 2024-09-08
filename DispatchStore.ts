@@ -1,11 +1,7 @@
 import { Applicability } from "./Applicatability"
 import { Rule } from "./Rule"
-
-
-
-
-
-
+import * as CryptoJS from 'crypto-js';
+import { Trie } from "./Trie";
 
 export interface DispatchStore{
    
@@ -68,3 +64,61 @@ export class SimpleDispatchStore implements DispatchStore{
         this.defaultHandler = handler
     }
 }
+
+
+
+export class CachedDispatchStore extends SimpleDispatchStore {
+    private cache: Map<string, any> = new Map();
+    
+    private hashValue(value: any): string {
+        const stringValue = JSON.stringify(value);
+        const hash = CryptoJS.SHA256(stringValue);
+        return hash.toString(CryptoJS.enc.Hex);
+    }
+
+    get_handler(...args: any): ((...args: any) => any) | null {
+        const hashKey = this.hashValue(args);
+        if (this.cache.has(hashKey)) {
+            return this.cache.get(hashKey);
+        }
+
+        const handler = super.get_handler(...args);
+        if (handler) {
+            this.cache.set(hashKey, handler);
+        }
+        return handler;
+    }
+
+    add_handler(applicability: Applicability, handler: (...args: any) => any) {
+        super.add_handler(applicability, handler);
+        this.cache.clear(); // Clear cache when a new handler is added
+    }
+
+    remove_handler(applicability: Applicability) {
+        super.remove_handler(applicability);
+        this.cache.clear(); // Clear cache when a handler is removed
+    }
+}
+
+
+// export class TrieDispatchStore extends SimpleDispatchStore{
+//     private trie: Trie
+
+//     constructor(){
+//         super()
+//         this.trie = new Trie()
+//     }
+
+//     add_handler(applicability: Applicability, handler: (...args: any) => any): void {
+//         super.add_handler(applicability, handler)
+//         this.trie.set([applicability.name,  ...applicability.predicates.map(predicate => predicate.name)], handler)
+//     }
+
+//     get_handler(...args: any): ((...args: any) => any) | null {
+//         const hashKey = this.hashValue(args);
+//         if (this.cache.has(hashKey)) {
+//             return this.cache.get(hashKey);
+//         }
+//     }
+// }
+
