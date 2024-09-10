@@ -7,23 +7,7 @@ import { is_atom } from "./generic_predicates"
 export type BetterSet<T> = {
     meta_data: Map<string, T>
     identify_by: (a: T) => string
-    // get(value: T): T
-    // add(value: T): BetterSet<T>
-    // remove(value: T): BetterSet<T>
-    // has(value: T): boolean
-    // do(func: (meta_data: Map<string, T>) => Map<string, T>): BetterSet<T>
-    // merge(set: BetterSet<T>): BetterSet<T>
-    // filter(predicate: (value: T) => boolean): BetterSet<T>
-    // map(mapper: (value: T) => T): BetterSet<T>
-    // for_each(action: (value: T) => void): void
-    // flat_map(mapper: (value: T) => [string, T][]): BetterSet<T>
-    // reduce(reducer: (acc: T, value: T) => T, initial: T): T
-    // find(predicate: (value: T) => boolean): T | undefined
-    // get_length(): number
-    // to_array(): T[]
-    // has_all(set: BetterSet<T>): boolean
-    // is_subset_of(set: BetterSet<T>): boolean
-    // get_value(index: number): T
+
 }
 
 
@@ -35,99 +19,6 @@ class BetterSetImpl<T> implements BetterSet<T>{
         this.meta_data = meta_data
         this.identify_by = compara_by
     }
-
-    // get_meta_data(): Map<string, T>{
-    //     return this.meta_data
-    // }
-
-    // get(value: T): T{
-    //     return this.meta_data.get(this.compara_by(value))
-    // }
-
-    // add(value: T): BetterSet<T>{
-    //     var copy = this.meta_data
-    //     copy.set(this.compara_by(value), value)
-
-    //     return new BetterSet(copy, this.compara_by)
-    // }
-
-    // remove(value: T): BetterSet<T>{
-    //     var copy = this.meta_data
-    //     copy.delete(this.compara_by(value))
-
-    //     return new BetterSet(copy, this.compara_by)
-    // }
-
-    // has(value: T): boolean{
-    //     return this.meta_data.has(this.compara_by(value))
-    // }
-
-    // do(func: (meta_data: Map<string, T>) => Map<string, T>): BetterSet<T>{
-    //     var copy = this.meta_data
-    //     copy = func(copy)
-
-    //     return new BetterSet(copy, this.compara_by)
-    // }
-
-    // merge(set: BetterSet<T>): BetterSet<T>{
-    //     return set.do((s) => { return new Map([...this.meta_data, ...s])})
-    // }
-
-    // filter(predicate: (value: T) => boolean): BetterSet<T>{
-    //     return this.do((s) => { return new Map([...s].filter(([key, value]) => predicate(value)))})
-    // } 
-
-    // map(mapper: (value: T) => T): BetterSet<T>{
-    //     return this.do((s) => { return new Map([...s].map(([key, value]) => [key, mapper(value)]))})
-    // }
-
-    // for_each(action: (value: T) => void): void{
-    //     this.meta_data.forEach((value, key) => action(value))
-    // } 
-
-    // flat_map(mapper: (value: T) => [string, T][]): BetterSet<T> {
-    //     return this.do((s) => { 
-    //         return new Map([...s].flatMap(([, value]) => mapper(value)))
-    //     })
-    // }
-
-    // reduce(reducer: (acc: T, value: T) => T, initial: T): T{
-    //     return [...this.meta_data.values()].reduce(reducer, initial)
-    // }
-
-    // find(predicate: (value: T) => boolean): T | undefined{
-    //     return [...this.meta_data.values()].find(predicate)
-    // } 
-
-    // get_length(): number{
-    //     return this.meta_data.size
-    // }
-
-    // to_array(): T[]{
-    //     return [...this.meta_data.values()]
-    // }
-
-    // has_all(set: BetterSet<T>): boolean{
-    //     for (const [key, value] of this.meta_data){
-    //         if (!set.has(value)){
-    //             return false
-    //         }
-    //     }
-    //     return true
-    // }
-
-    // is_subset_of(set: BetterSet<T>): boolean{
-    //    if ((this.get_length() > set.get_length()) && this.has_all(set)){
-    //      return false
-    //    }
-    //    else{
-    //      return true
-    //    }
-    // }
-
-    // get_value(index: number): T{
-    //     return [...this.meta_data.values()][index]
-    // } 
 }
 
 export const is_better_set = register_predicate("is_better_set", (a: any) => a instanceof BetterSetImpl)
@@ -241,3 +132,8 @@ export function get_value<T>(set: BetterSet<T>, index: number): T {
 }
 
 // ... existing code ...
+
+
+export function force_load_generic_better_set(){
+ 
+}

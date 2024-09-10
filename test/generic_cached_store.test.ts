@@ -10,7 +10,6 @@ describe('generic_procedure with caching', () => {
     
     beforeEach(() => {
         jest.clearAllMocks();  // Clear mocks before each test
-        clear_predicate_store(); // Clear the predicates store before each test
     });
 
     test('should execute default handler if no specific handler matches', () => {

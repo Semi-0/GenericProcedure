@@ -93,6 +93,7 @@ export class PredicateStore {
 }
 
 export function clear_predicate_store(){
+    console.log("warning!!: if you saw this in a runtime, it means probably this is a bug in the code, the predicate should never be cleared unless in very specific cases")
     defaultPredicateStore.clear()
 }
 
@@ -101,6 +102,7 @@ export var defaultPredicateStore = new PredicateStore();
 
 export function guarantee_default_predicate_store_is_inited(){
     if (defaultPredicateStore === undefined){
+        console.log("defaultPredicateStore is undefined, creating new one")
         defaultPredicateStore = new PredicateStore()
     }
 }
@@ -111,6 +113,10 @@ export function register_predicate(name: string, predicate: (...args: any) => bo
     guarantee_default_predicate_store_is_inited()
     defaultPredicateStore.register(new Predicate(name, predicate));
     return predicate
+}
+
+export function is_predicate_registered(callback: (arg: any) => boolean): boolean {
+    return defaultPredicateStore.has(callback)
 }
 
 export function get_predicate(name: string): ((arg: any) => boolean) | undefined {
@@ -137,6 +143,9 @@ export function search_predicate(name: string) {
     defaultPredicateStore.search(name);
 }
 
+export function summary_all_predicates(){
+    return get_predicates().map(predicate => predicate.summary()).join(", ")
+}
 
 
 
@@ -145,7 +154,9 @@ function find_predicates_and_guarantee_registered(preds: ((arg: any) => boolean)
 
     guard(predicates.every(predicate => predicate !== undefined), () => {
         const unregistered_predicates = preds.filter(arg_critic => defaultPredicateStore.getFromProcedure(arg_critic) === undefined).toString()
-        throw new Error("find predicates has not been registered, predicate: " + unregistered_predicates);
+        throw new Error("find predicates has not been registered, predicate: " 
+            + unregistered_predicates +"\nregistered predicates:" 
+            + summary_all_predicates());
     })
     //@ts-ignore
     return predicates

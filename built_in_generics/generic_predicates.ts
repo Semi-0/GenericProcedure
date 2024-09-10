@@ -1,5 +1,5 @@
 
-import { all_match, match_args, register_predicate, Predicate, force_load_predicate } from "../Predicates"
+import { all_match, match_args, register_predicate, Predicate, force_load_predicate, get_predicates, summary_all_predicates } from "../Predicates"
 
 // helper functions 
 
@@ -18,6 +18,10 @@ export const is_array = register_predicate("is_array", (a: any) => Array.isArray
 export const is_atom = register_predicate("is_atom", (a: any) => {
     return _is_atom(a)
 })
+
+export const is_function = register_predicate("is_function", (a: any) => typeof a === "function") 
+
+export const is_any = register_predicate("is_any", (a: any) => true)    
 
 
 
@@ -48,3 +52,8 @@ export const is_int = register_predicate("is_int", (a: any): a is number =>
 export const is_float = register_predicate("is_float", (a: any): a is number => 
     typeof a === "number" && a % 1 !== 0
 )
+
+export function force_load_generic_predicates(){
+ 
+    
+}

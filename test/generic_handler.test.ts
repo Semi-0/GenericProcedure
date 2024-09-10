@@ -7,7 +7,6 @@ import { register_predicate, execute_predicate, get_predicate,  match_args, clea
 describe('Predicates', () => {
     beforeEach(() => {
         // Clear the predicates store before each test
-        clear_predicate_store()
     });
 
     test('should add and retrieve a predicate', () => {
@@ -27,10 +26,10 @@ describe('Predicates', () => {
 
     test('should execute a predicate', () => {
         
-        const predicate = register_predicate('testPredicate', jest.fn((arg: any) => arg === 42) );
+        const predicate = register_predicate('testPredicate1', jest.fn((arg: any) => arg === 42) );
 
-        const result1 = execute_predicate('testPredicate', 42);
-        const result2 = execute_predicate('testPredicate', 42);
+        const result1 = execute_predicate('testPredicate1', 42);
+        const result2 = execute_predicate('testPredicate1', 42);
 
         expect(result1).toBe(true);
         expect(result2).toBe(true);
