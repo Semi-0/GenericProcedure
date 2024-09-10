@@ -11,7 +11,7 @@ force_load_generic_better_set()
 force_load_generic_predicates()
 
 
-const map = construct_simple_generic_procedure(
+export const map = construct_simple_generic_procedure(
     "map",
     2,
     (array: any[], mapper: (value: any) => any) => {
@@ -26,7 +26,7 @@ define_generic_procedure_handler(map,
     }
 )
 
-const filter = construct_simple_generic_procedure(
+export const filter = construct_simple_generic_procedure(
     "filter",
     2,
     (array: any[], predicate: (value: any) => boolean) => {
@@ -41,7 +41,7 @@ define_generic_procedure_handler(filter,
     }
 )
 
-const reduce = construct_simple_generic_procedure(
+export const reduce = construct_simple_generic_procedure(
     "reduce",
     3,
     (array: any[], reducer: (acc: any, value: any) => any, initial: any) => {
@@ -66,7 +66,7 @@ define_generic_procedure_handler(reduce,
     }
 )
 
-const remove_duplicates = construct_simple_generic_procedure(
+export const remove_duplicates = construct_simple_generic_procedure(
     "remove_duplicates",
     1,
     (array: any[]) => {
@@ -74,7 +74,7 @@ const remove_duplicates = construct_simple_generic_procedure(
     }
 )
 
-const first = construct_simple_generic_procedure(
+export const first = construct_simple_generic_procedure(
     "first",
     1,
     (array: any[]) => {
@@ -82,7 +82,7 @@ const first = construct_simple_generic_procedure(
     }
 )
 
-const last = construct_simple_generic_procedure(
+export const last = construct_simple_generic_procedure(
     "last",
     1,
     (array: any[]) => {
