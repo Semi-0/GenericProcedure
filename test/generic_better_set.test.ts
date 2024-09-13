@@ -6,7 +6,7 @@ import {
     has,
     merge,
     filter,
-    map,
+    map_to_new_set,
     get_length,
     to_array,
     is_subset_of,
@@ -56,8 +56,8 @@ import {
     });
   
     test('map transforms set values', () => {
-      const mappedArray = map(set, (value) => value * 2);
-      expect(mappedArray).toEqual([2, 4, 6]);
+      const mappedArray = map_to_new_set(set, (value) => value * 2, identify_by);
+      expect(to_array(mappedArray)).toEqual([2, 4, 6]);
     });
   
     test('is_subset_of checks if one set is a subset of another', () => {

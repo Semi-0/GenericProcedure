@@ -1,6 +1,6 @@
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure"
-import { force_load_generic_better_set, is_better_set } from "./generic_better_set"
-import { map as map_set, filter as filter_set, reduce as reduce_set } from "./generic_better_set"
+import { force_load_generic_better_set, is_better_set, map_to_same_set } from "./generic_better_set"
+import { map_to_new_set as map_to_new_set, filter as filter_set, reduce as reduce_set } from "./generic_better_set"
 import { is_any, is_array, is_function } from "./generic_predicates"
 import { BetterSet } from "./generic_better_set"
 import { match_args } from "../Predicates"
@@ -22,7 +22,7 @@ export const map = construct_simple_generic_procedure(
 define_generic_procedure_handler(map,
     match_args(is_better_set, is_function),
     (set: BetterSet<any>, mapper: (value: any) => any) => {
-        return map_set(set, mapper)
+        return map_to_same_set(set, mapper)
     }
 )
 

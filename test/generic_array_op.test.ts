@@ -21,7 +21,7 @@ describe('array_operation', () => {
     expect(mappedArray).toEqual([2, 4, 6, 8, 10]);
 
     const mappedSet = array_operation.map(testSet, (x) => x * 2);
-    expect(mappedSet).toEqual([2, 4, 6, 8, 10]);
+    expect(to_array(mappedSet)).toEqual([2, 4, 6, 8, 10]);
   });
 
   test('filter works with arrays and BetterSet', () => {

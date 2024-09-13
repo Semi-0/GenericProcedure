@@ -86,8 +86,19 @@ export function filter<T>(set: BetterSet<T>, predicate: (value: T) => boolean): 
     return do_operation(set, (s) => new Map([...s].filter(([, value]) => predicate(value))), set.identify_by);
 }
 
-export function map<A, B>(set: BetterSet<A>, mapper: (value: A) => B): B[] {
-    return Array.from(set.meta_data.values()).map(mapper);
+export function map_to_new_set<A, B>(set: BetterSet<A>, mapper: (value: A) => B, new_identify_by: (b: B) => string): BetterSet<B> {
+    return do_operation(set, 
+        (s) => new Map([...s].map(([, value]) => [new_identify_by(mapper(value)), mapper(value)])),
+        new_identify_by
+    );
+}
+
+export function map_to_array<A, B>(set: BetterSet<A>, mapper: (value: A) => B): B[] {
+    return [...set.meta_data.values()].map(mapper);
+}
+
+export function map_to_same_set<A>(set: BetterSet<A>, mapper: (value: A) => A): BetterSet<A> {
+    return map_to_new_set(set, mapper, set.identify_by);
 }
 
 export function for_each<T>(set: BetterSet<T>, action: (value: T) => void): void {
