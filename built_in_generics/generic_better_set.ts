@@ -93,10 +93,6 @@ export function map_to_new_set<A, B>(set: BetterSet<A>, mapper: (value: A) => B,
     );
 }
 
-export function map_to_array<A, B>(set: BetterSet<A>, mapper: (value: A) => B): B[] {
-    return [...set.meta_data.values()].map(mapper);
-}
-
 export function map_to_same_set<A>(set: BetterSet<A>, mapper: (value: A) => A): BetterSet<A> {
     return map_to_new_set(set, mapper, set.identify_by);
 }
@@ -105,8 +101,15 @@ export function for_each<T>(set: BetterSet<T>, action: (value: T) => void): void
     set.meta_data.forEach((value) => action(value));
 }
 
-export function flat_map<A,B>(set: BetterSet<A>, mapper: (value: A) => [string, B][], new_compare_by: (a: B) => string): BetterSet<B> {
-    return do_operation(set, (s) => new Map([...s].flatMap(([, value]) => mapper(value))), new_compare_by);
+export function flat_map<A,B>(set: BetterSet<A>, mapper: (value: A) => BetterSet<B>, new_compare_by: (a: B) => string): BetterSet<B> {
+    const result = new Map<string, B>()
+    for (const value of set.meta_data.values()){
+        const new_set = mapper(value)
+        for (const value2 of new_set.meta_data.values()){
+            result.set(new_compare_by(value2), value2)
+        }
+    }
+    return new BetterSetImpl(result, new_compare_by)
 }
 
 export function reduce<T>(set: BetterSet<T>, reducer: (acc: T, value: T) => T, initial: T): T {
@@ -141,6 +144,32 @@ export function is_subset_of<T>(set1: BetterSet<T>, set2: BetterSet<T>): boolean
 export function get_value<T>(set: BetterSet<T>, index: number): T {
     return [...set.meta_data.values()][index];
 }
+
+export function set_equal<T>(set1: BetterSet<T>, set2: BetterSet<T>): boolean {
+    return get_length(set1) === get_length(set2) && is_subset_of(set1, set2)
+} 
+
+export function set_smaller_than<T>(set1: BetterSet<T>, set2: BetterSet<T>): boolean {
+    return is_subset_of(set1, set2) && get_length(set1) < get_length(set2)
+}
+
+export function set_larger_than<T>(set1: BetterSet<T>, set2: BetterSet<T>): boolean {
+    return set_smaller_than(set2, set1)
+}
+
+export function set_remove<T>(set: BetterSet<T>, ...elts: T[]): BetterSet<T>{
+    return construct_better_set([...set.meta_data.values()].filter((value) => !elts.includes(value)), set.identify_by)
+}
+
+export function set_every<T>(set: BetterSet<T>, predicate: (value: T) => boolean): boolean {
+    return [...set.meta_data.values()].every(predicate);
+}
+
+export function set_some<T>(set: BetterSet<T>, predicate: (value: T) => boolean): boolean {
+    return [...set.meta_data.values()].some(predicate);
+}
+
+
 
 // ... existing code ...
 
