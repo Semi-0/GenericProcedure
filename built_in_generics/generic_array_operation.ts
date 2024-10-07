@@ -6,7 +6,6 @@ import { BetterSet } from "./generic_better_set"
 import { match_args } from "../Predicates"
 import { force_load_generic_predicates } from "./generic_predicates"
 import { guard, throw_error, throw_type_mismatch } from "./other_generic_helper"
-import { inspect } from "bun"
 force_load_generic_better_set()
 force_load_generic_predicates()
 
@@ -46,7 +45,7 @@ export const reduce = construct_simple_generic_procedure(
     3,
     (array: any[], reducer: (acc: any, value: any) => any, initial: any) => {
         guard(is_function(reducer), throw_type_mismatch("reduce", "function", typeof reducer))
-        guard(is_array(array), throw_type_mismatch("reduce", "array", inspect(array)))
+        guard(is_array(array), throw_type_mismatch("reduce", "array", array.toString()))
         return _array_reduce(array, reducer, initial)
     }
 )
