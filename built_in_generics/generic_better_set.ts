@@ -132,7 +132,7 @@ export function set_for_each<T>(action: (value: T) => void, set: BetterSet<T>): 
     set.meta_data.forEach((value) => action(value));
 }
 
-export function set_flat_map<A,B>(mapper: (value: A) => BetterSet<B>, set: BetterSet<A>): BetterSet<B> {
+export function set_flat_map<A,B>(set: BetterSet<A>, mapper: (value: A) => BetterSet<B>): BetterSet<B> {
     var result = construct_better_set([], to_string)
     
     function flatten(innerSet: BetterSet<A | B>) {

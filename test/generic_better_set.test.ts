@@ -79,7 +79,7 @@ import {
     });
     
     test('flat_map transforms and flattens set values', () => {
-      const result = set_flat_map((value) => construct_better_set([value, value * 2], identify_by), set);
+      const result = set_flat_map(set, (value) => construct_better_set([value, value * 2], identify_by));
       expect(set_get_length(result)).toBe(5);
 
       expect(to_array(result).sort()).toEqual([1, 2, 3, 4, 6]);
