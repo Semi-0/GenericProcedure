@@ -14,7 +14,8 @@ import {
     set_flat_map,
     set_reduce_right,
     set_union,
-    make_multi_dimensional_set
+    make_multi_dimensional_set,
+    set_map
   } from '../built_in_generics/generic_better_set';
 
   import { describe, beforeEach, test, expect } from 'bun:test';
@@ -96,6 +97,16 @@ import {
       expect(set_get_length(unionSet)).toBe(2);
       expect(to_array(unionSet).sort()).toEqual([1, 2]);
     });
+
+    test('set_map only execute the function once for each value', () => {
+      let count = 0
+      const mappedSet = set_map(set, (value) => {
+        count++
+        return value * 2
+      })
+      expect(count).toBe(3)
+    })
+
 
     test('make_multi_dimensional_set creates a nested set structure', () => {
       const data = [1, [2, 3], [4, [5, 6]]];

@@ -97,7 +97,14 @@ export function set_filter<T>(set: BetterSet<T>, predicate: (value: T) => boolea
 
 export function map_to_new_set<A, B>(set: BetterSet<A>, mapper: (value: A) => B, new_identify_by: (b: B) => string): BetterSet<B> {
     return do_operation(set, 
-        (s) => new Map([...s].map(([, value]) => [new_identify_by(mapper(value)), mapper(value)])),
+        (s) => {
+            var result = new Map()
+            for (const value of s.values()){
+                const mapped_value = mapper(value)
+                result.set(new_identify_by(mapped_value), mapped_value)
+            }
+            return result
+        },
         new_identify_by
     );
 }
