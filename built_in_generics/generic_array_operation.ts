@@ -1,11 +1,8 @@
-import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure"
-import { force_load_generic_better_set, is_better_set, map_to_same_set } from "./generic_better_set"
-import { map_to_new_set as map_to_new_set, set_filter as filter_set, set_reduce as reduce_set } from "./generic_better_set"
+import { construct_simple_generic_procedure } from "../GenericProcedure"
 import { is_any, is_array, is_function } from "./generic_predicates"
 import { match_args } from "../Predicates"
 import { force_load_generic_predicates } from "./generic_predicates"
 import { guard, throw_error, throw_type_mismatch } from "./other_generic_helper"
-force_load_generic_better_set()
 force_load_generic_predicates()
 
 
