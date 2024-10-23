@@ -1,4 +1,4 @@
-import { set_metaData, get_metaData, get_default_store, set_store } from "./GenericStore";
+import { set_metaData, get_metaData, get_default_store, set_store, summarize_metadatas } from "./GenericStore";
 import { GenericProcedureMetadata } from "./GenericProcedureMetadata";
 import type { Int } from "./types";
 import { CachedDispatchStore, DispatchStore, SimpleDispatchStore } from "./DispatchStore";
@@ -13,7 +13,8 @@ export function define_generic_procedure_handler(procedure: (...args: any) => an
         metaData.addHandler(applicability, handler)
     }
     else{
-        throw new Error("GenericProcedureMetadata not found")
+        throw new Error(`GenericProcedureMetadata not found, procedure: ${procedure.toString()}, 
+        avaliable procedures: ${summarize_metadatas().join(", ")}`)
     }
 }
 

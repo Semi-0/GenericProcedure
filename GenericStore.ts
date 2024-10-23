@@ -8,6 +8,9 @@ export function has_metaData(procedure: (...args: any) => any): boolean{
     return stores.has(procedure)
 } 
 
+export function summarize_metadatas(): string[]{
+    return [...stores.values()].map(metaData => metaData.name + " " + metaData.arity)
+}
 
 
 export function set_metaData(procedure: (...args: any) => any, metaData: GenericProcedureMetadata){

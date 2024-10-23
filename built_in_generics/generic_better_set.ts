@@ -26,7 +26,8 @@ class BetterSetImpl<T> implements BetterSet<T>{
 
 
 
-export const is_better_set = register_predicate("is_better_set", (a: any) => a.meta_data !== undefined && a.identify_by !== undefined)
+export const is_better_set = register_predicate("is_better_set", (a: any) => a !== null && a !== undefined &&
+                                         a.meta_data !== undefined && a.identify_by !== undefined)
 
 define_generic_procedure_handler(to_string, match_args(is_better_set), (a: BetterSet<any>) => {
     return `[${[...a.meta_data.values()].join(", ")}]`
