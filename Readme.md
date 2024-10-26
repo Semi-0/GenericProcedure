@@ -1,4 +1,4 @@
-# Generic Handler
+# Generic Procedure
 
 ## Overview
 
