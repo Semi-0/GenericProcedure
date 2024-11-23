@@ -7,11 +7,7 @@ force_load_predicate()
 
 export const is_string =  register_predicate("is_string",  (a: any) => typeof a === "string" )
 
-
-
 export const is_object = register_predicate("is_object", (a: any) => typeof a === "object" && a !== null)
-
-
 
 export const is_array = register_predicate("is_array", (a: any) => Array.isArray(a))
 

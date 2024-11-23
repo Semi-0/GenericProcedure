@@ -9,7 +9,7 @@ import { is_any, is_function } from "./generic_predicates"
 export type BetterSet<T> = {
     meta_data: Map<string, T>
     identify_by: (a: T) => string
-
+    copy(): BetterSet<T>
 }
 
 
@@ -22,21 +22,22 @@ class BetterSetImpl<T> implements BetterSet<T>{
         this.identify_by = compara_by
     }
 
+    copy(): BetterSet<T> {
+        return new BetterSetImpl(new Map(this.meta_data), this.identify_by)
+    }
 }
-
 
 
 export const is_better_set = register_predicate("is_better_set", (a: any) => a !== null && a !== undefined &&
                                          a.meta_data !== undefined && a.identify_by !== undefined)
 
 define_generic_procedure_handler(to_string, match_args(is_better_set), (a: BetterSet<any>) => {
-    return `[${[...a.meta_data.values()].join(", ")}]`
+    return 'BetterSet[' + reduce(a, (acc, value) => acc + to_string(value), '')   + ']'
 })
 
 export function make_better_set<T>(values: T[]): BetterSet<T>{
-    // convenient method to make a better set with generic operations 
+    // convenient method to make a better set with generic operations, should not over use
     return construct_better_set(values, to_string)
-
 }
 
 export function make_multi_dimensional_set(data: any[]): BetterSet<any>{
@@ -55,22 +56,26 @@ export function construct_better_set<T>(values: T[], identify_by: (a: T) => stri
 }
 
 export function set_add_item<T>(set: BetterSet<T>, item: T): BetterSet<T>{
-    return construct_better_set([...set.meta_data.values(), item], set.identify_by)
+    var copy = set.copy()
+    copy.meta_data.set(set.identify_by(item), item)
+    return copy
 } 
 
 export function set_remove_item<T>(set: BetterSet<T>, item: T): BetterSet<T>{
-    return construct_better_set([...set.meta_data.values()].filter((value) => value !== item), set.identify_by)
+    var copy = set.copy()
+    copy.meta_data.delete(set.identify_by(item))
+    return copy
 } 
 
 export function merge_set<T>(set1: BetterSet<T>, set2: BetterSet<T>): BetterSet<T>{
-    return construct_better_set([...set1.meta_data.values(), ...set2.meta_data.values()], set1.identify_by)
+    const copy = set1.copy()
+    set_for_each((value) => copy.meta_data.set(set1.identify_by(value), value), set2)
+    return copy
 }
 
 export function difference_set<T>(set1: BetterSet<T>, set2: BetterSet<T>): BetterSet<T>{
     return construct_better_set([...set1.meta_data.values()].filter((value) => !set2.meta_data.has(set1.identify_by(value))), set1.identify_by)
 }
-
-// adaption 
 
 export function get_meta_data<T>(set: BetterSet<T>): Map<string, T> {
     return set.meta_data;
@@ -79,7 +84,6 @@ export function get_meta_data<T>(set: BetterSet<T>): Map<string, T> {
 export function get<T>(set: BetterSet<T>, value: T): T {
     return set.meta_data.get(set.identify_by(value)) as T
 }
-
 
 export function set_has<T>(set: BetterSet<T>, value: T): boolean {
     return set.meta_data.has(set.identify_by(value));
@@ -91,9 +95,11 @@ export function do_operation<A, B>(set: BetterSet<A>, func: (meta_data: Map<stri
 }
 
 export function set_merge<T>(set1: BetterSet<T>, set2: BetterSet<T>, new_compare_by: (a: T) => string ): BetterSet<T> {
-    return do_operation(set2, (s) => new Map([...set1.meta_data, ...s]), new_compare_by);
+    const copy = set1.copy()
+    copy.identify_by = new_compare_by
+    set_for_each((value) => copy.meta_data.set(new_compare_by(value), value), set2)
+    return copy
 }
-
 export function set_filter<T>(set: BetterSet<T>, predicate: (value: T) => boolean): BetterSet<T> {
     return do_operation(set, (s) => new Map([...s].filter(([, value]) => predicate(value))), set.identify_by);
 }
