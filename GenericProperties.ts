@@ -234,6 +234,8 @@ const get_type_properties = (type: TypePredicate): Property[] => {
   return Array.from(property_map.values());
 };
 
+
+
 /**
  * Creates an instantiator function for a given type
  * 
