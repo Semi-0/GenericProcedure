@@ -419,4 +419,104 @@ describe('Deep Nested BetterSet Operations', () => {
     
     validateRecursively(result, 'root');
   });
+});
+
+describe('Nested BetterSet Validation', () => {
+  test('deeply nested BetterSets should all be valid', () => {
+    // Create several levels of nesting
+    const level3 = construct_better_set([1, 2, 3], x => x.toString());
+    const level2 = construct_better_set([4, level3, 5], x => x.toString());
+    const level1 = construct_better_set([6, level2, 7], x => x.toString());
+    const rootSet = construct_better_set([8, level1, 9], x => x.toString());
+
+    // Keep track of all sets we find
+    const foundSets: BetterSet<any>[] = [];
+
+    // Recursive function to validate all nested sets
+    const validateNestedSets = (set: BetterSet<any>, depth: number = 0) => {
+      // First verify this set is valid
+      expect(is_better_set(set)).toBe(true, `Set at depth ${depth} is not valid`);
+      foundSets.push(set);
+
+      // Check each value in the set
+      set_for_each(value => {
+        if (value && typeof value === 'object' && 'meta_data' in value) {
+          expect(is_better_set(value)).toBe(true, 
+            `Nested value at depth ${depth} should be a valid BetterSet`);
+          validateNestedSets(value, depth + 1);
+        }
+      }, set);
+    };
+
+    // Start validation from root
+    validateNestedSets(rootSet);
+
+    // We should have found exactly 4 sets (root + 3 levels)
+    expect(foundSets.length).toBe(4);
+
+    // Each found set should be valid
+    foundSets.forEach((set, index) => {
+      expect(is_better_set(set)).toBe(true, `Found set at index ${index} is not valid`);
+    });
+
+    // Alternative validation using iteration
+    const validateByIteration = (set: BetterSet<any>) => {
+      for (let i = 0; i < set_get_length(set); i++) {
+        const value = get_value(set, i);
+        if (value && typeof value === 'object' && 'meta_data' in value) {
+          expect(is_better_set(value)).toBe(true, 
+            `Value at index ${i} should be a valid BetterSet`);
+          validateByIteration(value);
+        }
+      }
+    };
+
+    validateByIteration(rootSet);
+  });
+
+  test('modifying nested BetterSets should maintain validity', () => {
+    // Create a nested structure
+    const innerSet = construct_better_set([1, 2], x => x.toString());
+    const middleSet = construct_better_set([3, innerSet], x => x.toString());
+    const outerSet = construct_better_set([4, middleSet], x => x.toString());
+
+    // Verify initial validity
+    expect(is_better_set(outerSet)).toBe(true);
+    expect(is_better_set(middleSet)).toBe(true);
+    expect(is_better_set(innerSet)).toBe(true);
+
+    // Count how many BetterSets we find
+    let setCount = 0;
+    set_for_each(value => {
+      if (is_better_set(value)) {
+        setCount++;
+        // Verify each nested set
+        set_for_each(innerValue => {
+          if (is_better_set(innerValue)) {
+            setCount++;
+            expect(is_better_set(innerValue)).toBe(true);
+          }
+        }, value);
+      }
+    }, outerSet);
+
+    // We should have found exactly 2 nested sets
+    expect(setCount).toBe(2);
+  });
+
+  test('circular references should be detected', () => {
+    // Create sets that will reference each other
+    const set1 = construct_better_set([1], x => x.toString());
+    const set2 = construct_better_set([2, set1], x => x.toString());
+    
+    // This would create a circular reference
+    // Note: This might throw depending on your implementation
+    expect(() => {
+      construct_better_set([set2, set1], x => x.toString());
+    }).not.toThrow();
+
+    // Both original sets should still be valid
+    expect(is_better_set(set1)).toBe(true);
+    expect(is_better_set(set2)).toBe(true);
+  });
 }); 

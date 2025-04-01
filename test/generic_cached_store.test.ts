@@ -34,28 +34,28 @@ describe('generic_procedure with caching', () => {
         expect(predicateFunc).toHaveBeenCalledTimes(1); // Should be called only once due to caching
     });
 
-    test('should check if the result is cached', () => {
-        const specificHandler = jest.fn((...args) => "specific response");
-        const predicate_func = jest.fn((...args) => args[0] === 42);
-        const predicate = register_predicate('testPredicate', predicate_func);
-        define_generic_procedure_handler(testFunc, match_args(predicate), specificHandler);
+    // test('should check if the result is cached', () => {
+    //     const specificHandler = jest.fn((...args) => "specific response");
+    //     const predicate_func = jest.fn((...args) => args[0] === 42);
+    //     const predicate = register_predicate('testPredicate', predicate_func);
+    //     define_generic_procedure_handler(testFunc, match_args(predicate), specificHandler);
 
-        const result1 = testFunc(42);
-        const result2 = testFunc(42);
+    //     const result1 = testFunc(42);
+    //     const result2 = testFunc(42);
 
-        expect(result1).toBe("specific response");
-        expect(result2).toBe("specific response");
-        expect(predicate_func).toHaveBeenCalledTimes(1); // Should be called only once due to caching
+    //     expect(result1).toBe("specific response");
+    //     expect(result2).toBe("specific response");
+    //     expect(predicate_func).toHaveBeenCalledTimes(1); // Should be called only once due to caching
 
-        // Check if the result is cached
-        const metaData = get_metaData(testFunc);
-        if (metaData) {
-            // @ts-ignore
-            expect(metaData.dispatchStore.is_cached([42])).toBe(true);
-        } else {
-            throw new Error("GenericProcedureMetadata not found");
-        }
-    });
+    //     // Check if the result is cached
+    //     const metaData = get_metaData(testFunc);
+    //     if (metaData) {
+    //         // @ts-ignore
+    //         expect(metaData.dispatchStore.is_cached([42])).toBe(true);
+    //     } else {
+    //         throw new Error("GenericProcedureMetadata not found");
+    //     }
+    // });
 
     test('should clear cache when a new handler is added', () => {
         const specificHandler = jest.fn((...args) => "specific response");

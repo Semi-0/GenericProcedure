@@ -107,9 +107,9 @@ export function guarantee_default_predicate_store_is_inited(){
     }
 }
 
+export type PredicateFunction = (...args: any) => boolean
 
-
-export function register_predicate(name: string, predicate: (...args: any) => boolean) {
+export function register_predicate(name: string, predicate: PredicateFunction) {
     guarantee_default_predicate_store_is_inited()
     defaultPredicateStore.register(new Predicate(name, predicate));
     return predicate

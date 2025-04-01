@@ -1,5 +1,5 @@
 
-import { all_match, match_args, register_predicate, Predicate, force_load_predicate, get_predicates, summary_all_predicates } from "../Predicates"
+import { all_match, match_args, register_predicate, Predicate, force_load_predicate, get_predicates, summary_all_predicates, PredicateFunction } from "../Predicates"
 
 // helper functions 
 
@@ -19,7 +19,16 @@ export const is_function = register_predicate("is_function", (a: any) => typeof 
 
 export const is_any = register_predicate("is_any", (a: any) => true)    
 
+export const is_date = register_predicate("is_date", (a: any) => a instanceof Date)
 
+export const optional_predicate_constructor = (predicate: PredicateFunction) => {
+    return register_predicate(`optional_${predicate.name}`, (a: any) => {
+        if (a === undefined || a === null) {
+            return true
+        }
+        return predicate(a)
+    })
+}
 
 
 const _is_atom = (a: any): a is string | number | boolean => {

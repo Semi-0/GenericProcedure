@@ -209,7 +209,7 @@ export const set_reduce_right = <T, R>(f: (acc: R, value: T) => R, set: BetterSe
 
 export function set_for_each<T>(action: (value: T) => void, set: BetterSet<T>): void {
     ensure_valid_better_set(set);
-    set.meta_data.forEach((value) => action(value));
+    set.meta_data.forEach((value, key, map) => action(value));
 }
 
 export function set_flat_map<A,B>(set: BetterSet<A>, mapper: (value: A) => BetterSet<B>): BetterSet<B> {

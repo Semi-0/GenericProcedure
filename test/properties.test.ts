@@ -12,8 +12,10 @@ import {
   is_property,
   is_type,
   property_optional
-} from '../GenericProperties';
-import type { Property } from '../GenericProperties';
+} from '../generic_properties/GenericProperties';
+import type { Property } from '../generic_properties/GenericProperties';
+import { is_boolean, is_date, is_string, optional_predicate_constructor } from '../built_in_generics/generic_predicates';
+import { register_predicate } from '../Predicates';
 
 // Define a type for instances that allows property access
 interface Instance {
@@ -274,9 +276,10 @@ describe('Properties System', () => {
     });
     
     it('should create and use property setters', () => {
-      const set_name = property_setter(name_prop, person_type);
-      const set_age = property_setter(age_prop, person_type, 
-        (x) => typeof x === 'number' && x >= 18 && x <= 100);
+
+      const age_predicate = register_predicate("age_predicate", (x: any) => typeof x === 'number' && x >= 18 && x <= 100);
+      const set_name = property_setter(name_prop, person_type, is_string);
+      const set_age = property_setter(age_prop, person_type, age_predicate);
       
       set_name(person, 'Eva');
       set_age(person, 26);
@@ -294,8 +297,7 @@ describe('Properties System', () => {
     });
     
     it('should create and use property adders', () => {
-      const add_skill = property_adder(skills_prop, person_type, 
-        (x) => typeof x === 'string');
+      const add_skill = property_adder(skills_prop, person_type, is_string);
       
       add_skill(person, 'React');
       
@@ -307,8 +309,7 @@ describe('Properties System', () => {
     });
     
     it('should create and use property removers', () => {
-      const remove_skill = property_remover(skills_prop, person_type, 
-        (x) => typeof x === 'string');
+      const remove_skill = property_remover(skills_prop, person_type, is_string);
       
       remove_skill(person, 'JavaScript');
       
@@ -383,19 +384,21 @@ describe('Properties System', () => {
   });
   
   describe('Complex Example - Todo Item with Getters and Setters', () => {
+
+    const is_optional_date = optional_predicate_constructor(is_date)
     it('should model a Todo item with reactivity using getters and setters', () => {
       // Create properties
       const title_prop = make_property('title', {
-        predicate: (x) => typeof x === 'string'
+        predicate: is_string
       });
       
       const completed_prop = make_property('completed', {
-        predicate: (x) => typeof x === 'boolean',
+        predicate: is_boolean,
         default_value: false
       });
       
       const due_date_prop = make_property('due_date', {
-        predicate: (x) => x instanceof Date || x === null,
+        predicate: is_optional_date,
         default_value: null
       });
       
@@ -418,11 +421,12 @@ describe('Properties System', () => {
       const get_due_date = property_getter(due_date_prop, todo_type);
       const get_priority = property_getter(priority_prop, todo_type);
       
-      const set_title = property_setter(title_prop, todo_type);
-      const set_completed = property_setter(completed_prop, todo_type);
-      const set_due_date = property_setter(due_date_prop, todo_type);
-      const set_priority = property_setter(priority_prop, todo_type, 
-        (x) => typeof x === 'number' && x >= 1 && x <= 5);
+      const set_title = property_setter(title_prop, todo_type, is_string);
+      const set_completed = property_setter(completed_prop, todo_type, is_boolean);
+      const set_due_date = property_setter(due_date_prop, todo_type, is_optional_date);
+
+      const priority_predicate = register_predicate("priority_predicate", (x: any) => typeof x === 'number' && x >= 1 && x <= 5);
+      const set_priority = property_setter(priority_prop, todo_type, priority_predicate);
       
       // Create Todo instantiator
       const create_todo = type_instantiator(todo_type);

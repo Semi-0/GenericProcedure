@@ -88,6 +88,11 @@ export class CachedDispatchStore extends SimpleDispatchStore {
         }
     }
 
+    is_cached(...args: any[]): boolean {
+        const key = this.to_key(args);
+        return this.cache.has(key);
+    }
+
     add_handler(applicability: Applicability, handler: (...args: any) => any) {
         super.add_handler(applicability, handler);
         this.cache.clear(); // Clear cache when a new handler is added

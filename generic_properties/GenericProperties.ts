@@ -1,6 +1,6 @@
-import { throw_error } from "./built_in_generics/other_generic_helper";
-import { construct_simple_generic_procedure, define_generic_procedure_handler } from "./GenericProcedure";
-import { match_args, register_predicate } from "./Predicates";
+import { throw_error } from "../built_in_generics/other_generic_helper";
+import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure";
+import { match_args, PredicateFunction, register_predicate } from "../Predicates";
 
 /**
  * Properties System
@@ -58,8 +58,7 @@ export interface Property {
 /**
  * Type predicate function that receives properties as its data
  */
-export interface TypePredicate extends Function {
-  (obj: any): boolean;
+export interface TypePredicate extends PredicateFunction {
   name: string;
   properties: Property[];
   supertypes: TypePredicate[];
@@ -168,7 +167,7 @@ export const make_type = (name: string, properties: Property[]): TypePredicate =
   };
   
   // Create the TypePredicate object with writable properties
-  const type_predicate = type_predicate_fn as TypePredicate;
+  const type_predicate = register_predicate(name, type_predicate_fn) as TypePredicate;
   
   // Add properties to the function object
   Object.defineProperties(type_predicate, {
@@ -439,19 +438,19 @@ export const set_property_value = (property: Property, object: any, value: any) 
  * const name = get_name(person);
  * ```
  */
-export const property_getter = (property: Property, type: TypePredicate) => {
+export const property_getter = (property: Property, type: PredicateFunction) => {
   const procedure = construct_simple_generic_procedure(
     `get_${property.name}`, 
     1, 
     () => throw_error("ObjectCell", "property_getter", `Getter not implemented for ${property.name}`)
   );
   
-  // Register the predicate for the type
-  const type_predicate = register_predicate(`is_${type.name}`, (obj) => obj && obj.__type === type.name);
+
+  ;
   
   define_generic_procedure_handler(
     procedure, 
-    match_args(type_predicate), 
+    match_args(type), 
     (object) => get_binding(property, object)()
   );
   
@@ -479,24 +478,19 @@ const DEBUG_OUTPUT = false;
  * set_age(person, 31);
  * ```
  */
-export const property_setter = (property: Property, type: TypePredicate, value_predicate?: (arg: any) => boolean) => {
+export const property_setter = (property: Property, type: PredicateFunction, value_predicate: PredicateFunction) => {
   const procedure = construct_simple_generic_procedure(
     `set_${property.name}!`, 
     2, 
     () => throw_error("ObjectCell", "property_setter", `Setter not implemented for ${property.name}`)
   );
   
-  // Register the predicates
-  const type_predicate = register_predicate(`is_${type.name}`, (obj) => obj && obj.__type === type.name);
-  const value_check = value_predicate ? value_predicate : property.predicate;
-  const value_predicate_name = `${property.name}_value_predicate`;
-  const registered_value_predicate = register_predicate(value_predicate_name, (val: any) => value_check(val));
   
   define_generic_procedure_handler(
     procedure,
     match_args(
-      type_predicate,
-      registered_value_predicate
+      type,
+      value_predicate
     ),
     (object, value: any) => {
       const binding = get_binding(property, object);
@@ -526,7 +520,7 @@ export const property_setter = (property: Property, type: TypePredicate, value_p
  * @param modifier - Function that performs the modification
  * @returns A generic procedure that modifies the property value
  */
-export const property_modifier = (property: Property, type: TypePredicate, value_predicate: (arg: any) => boolean, 
+export const property_modifier = (property: Property, type: PredicateFunction, value_predicate: PredicateFunction, 
                                  noun: string, modifier: (item: any, items: any) => any) => {
   const procedure = construct_simple_generic_procedure(
     `${property.name}_${noun}`, 
@@ -536,15 +530,11 @@ export const property_modifier = (property: Property, type: TypePredicate, value
   );
   
   // Register the predicates
-  const type_predicate = register_predicate(`is_${type.name}_${noun}`, (obj) => obj && obj.__type === type.name);
-  const value_predicate_name = `${property.name}_${noun}_value_predicate`;
-  const registered_value_predicate = register_predicate(value_predicate_name, value_predicate);
-  
   define_generic_procedure_handler(
     procedure,
     match_args(
-      type_predicate,
-      registered_value_predicate
+      type,
+      value_predicate
     ),
     (object, item) => {
       const binding = get_binding(property, object);
@@ -583,7 +573,7 @@ export const property_modifier = (property: Property, type: TypePredicate, value
  * add_skill(person, "JavaScript");
  * ```
  */
-export const property_adder = (property: Property, type: TypePredicate, value_predicate: (arg: any) => boolean) => {
+export const property_adder = (property: Property, type: PredicateFunction, value_predicate: PredicateFunction) => {
   return property_modifier(property, type, value_predicate, "adder",
     (item, items) => {
       // Only add if not already present (uses eqv? in Scheme, here we use includes)
@@ -612,7 +602,7 @@ export const property_adder = (property: Property, type: TypePredicate, value_pr
  * remove_skill(person, "JavaScript");
  * ```
  */
-export const property_remover = (property: Property, type: TypePredicate, value_predicate: (arg: any) => boolean) => {
+export const property_remover = (property: Property, type: PredicateFunction, value_predicate: PredicateFunction) => {
   return property_modifier(property, type, value_predicate, "remover",
     (item, items) => {
       // Remove the item (delv in Scheme, here we use filter)
