@@ -478,7 +478,7 @@ const DEBUG_OUTPUT = false;
  * set_age(person, 31);
  * ```
  */
-export const property_setter = (property: Property, type: PredicateFunction, value_predicate: PredicateFunction) => {
+export const property_setter = (property: Property, type: PredicateFunction, value_predicate: (value: any) => boolean) => {
   const procedure = construct_simple_generic_procedure(
     `set_${property.name}!`, 
     2, 
@@ -520,7 +520,7 @@ export const property_setter = (property: Property, type: PredicateFunction, val
  * @param modifier - Function that performs the modification
  * @returns A generic procedure that modifies the property value
  */
-export const property_modifier = (property: Property, type: PredicateFunction, value_predicate: PredicateFunction, 
+export const property_modifier = (property: Property, type: PredicateFunction, value_predicate: (value: any) => boolean, 
                                  noun: string, modifier: (item: any, items: any) => any) => {
   const procedure = construct_simple_generic_procedure(
     `${property.name}_${noun}`, 
@@ -573,7 +573,7 @@ export const property_modifier = (property: Property, type: PredicateFunction, v
  * add_skill(person, "JavaScript");
  * ```
  */
-export const property_adder = (property: Property, type: PredicateFunction, value_predicate: PredicateFunction) => {
+export const property_adder = (property: Property, type: PredicateFunction, value_predicate: (value: any) => boolean) => {
   return property_modifier(property, type, value_predicate, "adder",
     (item, items) => {
       // Only add if not already present (uses eqv? in Scheme, here we use includes)
@@ -602,7 +602,7 @@ export const property_adder = (property: Property, type: PredicateFunction, valu
  * remove_skill(person, "JavaScript");
  * ```
  */
-export const property_remover = (property: Property, type: PredicateFunction, value_predicate: PredicateFunction) => {
+export const property_remover = (property: Property, type: PredicateFunction, value_predicate: (value: any) => boolean) => {
   return property_modifier(property, type, value_predicate, "remover",
     (item, items) => {
       // Remove the item (delv in Scheme, here we use filter)

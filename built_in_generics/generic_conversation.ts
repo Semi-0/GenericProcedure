@@ -34,10 +34,6 @@ define_generic_procedure_handler(to_string, match_args(is_array), (a: any[]) => 
     return "[" + a.map((x) => to_string(x)).join(", ") + "]"
 })
 
-define_generic_procedure_handler(to_string, match_args(is_object), (a: object) => {
-    return JSON.stringify(a)
-})
-
 
 // to_number
 

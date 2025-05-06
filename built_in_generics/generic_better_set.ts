@@ -172,7 +172,7 @@ export function set_map(set: BetterSet<any>, mapper: (value: any) => any) {
             }
         }
         return mapped;
-    }, to_string);
+    }, set.identify_by);
 }
 
 export const set_union = (set1: any, set2: any) => {
