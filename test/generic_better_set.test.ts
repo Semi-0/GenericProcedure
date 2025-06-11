@@ -86,7 +86,7 @@ import {
 
     test('reduce_right reduces set values from right to left', () => {
       const result = set_reduce_right((acc, value) => acc - value, set, 10);
-      expect(get_value(result, 0)).toBe(4); // 10 - 3 - 2 - 1 = 4
+      expect(result).toBe(4); // 10 - 3 - 2 - 1 = 4
     });
 
     test('set_union combines two sets', () => {

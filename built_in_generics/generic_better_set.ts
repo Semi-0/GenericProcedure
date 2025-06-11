@@ -7,6 +7,7 @@ import { map, filter, reduce } from "./generic_array_operation"
 import { is_any, is_array, is_function } from "./generic_predicates"
 import { v4 as uuidv4 } from 'uuid';
 import { createHash } from 'crypto';
+import { compose } from "./generic_combinator"
 
 export const identify_by = construct_simple_generic_procedure("identify_by", 1, to_string)
 
@@ -14,12 +15,13 @@ define_generic_procedure_handler(identify_by, match_args(is_array), (a: any) => 
     return createHash('sha256').update(JSON.stringify(a)).digest('hex')
 })
 
-export class BetterSet<T> {
-    public id: string
+export class BetterSet<T> implements Iterable<T> {
+    [Symbol.iterator](): Iterator<T> {
+        return this.meta_data.values()
+    }
     private meta_data: Map<string, any> = new Map()
 
     constructor(meta_data: Map<string, any>){
-        this.id = uuidv4()
         this.meta_data = meta_data
     }
 
@@ -64,9 +66,7 @@ export const is_better_set = register_predicate("is_better_set", (a: any) => a !
                                          a.add_item !== undefined && a.remove_item !== undefined && a.copy !== undefined)
 
 
-define_generic_procedure_handler(identify_by, match_args(is_better_set), (a: any) => {
-    return a.id
-})
+define_generic_procedure_handler(identify_by, match_args(is_better_set), compose(to_array, identify_by))
 
 define_generic_procedure_handler(to_string, match_args(is_better_set), (a: BetterSet<any>) => {
     return 'BetterSet[' + reduce(a, (acc, value) => acc + to_string(value), '')   + ']'
@@ -105,15 +105,8 @@ export function set_remove_item<T>(set: BetterSet<T>, item: T): BetterSet<T>{
 } 
 
 export function set_for_each<T>(action: (item: T) => void, set: BetterSet<T>): void {
-    var set_in_loop = set.copy()
-    for (let i = 0; i < set.length(); i++){
-        if (set_in_loop.first() !== undefined){
-            action(set_in_loop.first() as T)
-        }
-        else{
-            throw new Error('set_for_each: first item is undefined')
-        }
-        set_in_loop = set_in_loop.rest()
+    for (const item of set){
+        action(item)
     }
 }
 
@@ -178,7 +171,7 @@ export const set_union = (set1: any, set2: any) => {
 }
 
 
-export const set_reduce_right = <T, R>(f: (acc: R, value: T) => R, set: BetterSet<T>, initial: R): BetterSet<R> => {
+export const set_reduce_right = <T, R>(f: (acc: R, value: T) => R, set: BetterSet<T>, initial: R): R => {
     ensure_valid_better_set(set);
     const values = to_array(set);
     let result = initial;
@@ -187,7 +180,7 @@ export const set_reduce_right = <T, R>(f: (acc: R, value: T) => R, set: BetterSe
         result = f(result, values[i]);
     }
     
-    return construct_better_set([result]);
+    return result;
 };
 
 export function set_flat_map<A,B>(set: BetterSet<A>, mapper: (value: A) => B): BetterSet<B> {
@@ -220,11 +213,18 @@ export function set_reduce<T, B>(set: BetterSet<T>, reducer: (acc: B, value: T) 
 }
 
 export function set_find<T>(predicate: (value: T) => boolean, set: BetterSet<T>): T | undefined {
+   var set_in_loop = set.copy()
    for (let i = 0; i < set.length(); i++){
     if (set.first() !== undefined){
         if (predicate(set.first() as T)){
             return set.first() as T
         }
+        else{
+            set_in_loop = set_in_loop.rest()
+        }
+    }
+    else{
+        throw new Error('set_find: first item is undefined')
     }
    }
 }
@@ -242,16 +242,16 @@ export function to_array<T>(set: BetterSet<T>): T[] {
 }
 
 export function set_has_all<T>(set1: BetterSet<T>, set2: BetterSet<T>): boolean {
-    set_for_each((value) => {
-        if (!set_has(set2, value)) {
-            return false;
+    for (const item of set2){
+        if (!set_has(set1, item)){
+            return false
         }
-    }, set1)
-    return true;
+    }
+    return true
 }
 
 export function is_subset_of<T>(set1: BetterSet<T>, set2: BetterSet<T>): boolean {
-    return (set_get_length(set1) <= set_get_length(set2)) && set_has_all(set1, set2);
+    return (set_get_length(set1) <= set_get_length(set2)) && set_has_all(set2, set1);
 }
 
 export function get_value<T>(set: BetterSet<T>, index: number): T {
@@ -283,20 +283,20 @@ export function set_remove<T>(set: BetterSet<T>, ...elts: T[]): BetterSet<T>{
 }
 
 export function set_every<T>(set: BetterSet<T>, predicate: (value: T) => boolean): boolean {
-    set_for_each((value) => {
-        if (!predicate(value as T)){
+    for (const item of set){
+        if (!predicate(item)){
             return false
         }
-    }, set)
+    }
     return true
 }
 
 export function set_some<T>(set: BetterSet<T>, predicate: (value: T) => boolean): boolean {
-    set_for_each((value) => {
-        if (predicate(value as T)){
+    for (const item of set){
+        if (predicate(item)){
             return true
         }
-    }, set)
+    }
     return false
 }
 
