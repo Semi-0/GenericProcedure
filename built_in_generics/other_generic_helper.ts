@@ -2,6 +2,7 @@ import { get_predicates, is_predicate_registered, Predicate } from "../Predicate
 
 
 
+
 export function guard(condition: boolean, else_branch: () => void): void {
     if (condition) {
         return
@@ -29,8 +30,6 @@ export function guarantee_type(components_area: string, obj: any, type: string):
 export function guarantee_predicate_registered(components_area: string, predicate: (arg: any) => boolean): void {
    return guard(is_predicate_registered(predicate), () => throw_error(components_area, "predicate not registered", predicate.toString()))
 }
-
-
 
 export function deepCopy<T>(obj: T): T {
     if (obj === null || typeof obj !== 'object') {
