@@ -4,9 +4,7 @@ import {
     set_add_item,
     set_remove_item,
     set_has,
-    set_merge,
     set_filter,
-    map_to_new_set,
     set_get_length,
     to_array,
     is_subset_of,
@@ -14,8 +12,8 @@ import {
     set_flat_map,
     set_reduce_right,
     set_union,
-    make_multi_dimensional_set,
-    set_map
+    set_map,
+    merge_set
   } from '../built_in_generics/generic_better_set';
 
   import { describe, beforeEach, test, expect } from 'bun:test';
@@ -25,7 +23,7 @@ import {
     let set: BetterSet<number>;
   
     beforeEach(() => {
-      set = construct_better_set([1, 2, 3], identify_by);
+      set = construct_better_set([1, 2, 3]);
     });
   
     test('construct_better_set creates a set with initial values', () => {
@@ -48,8 +46,8 @@ import {
     });
   
     test('merge combines two sets', () => {
-      const set2 = construct_better_set([3, 4, 5], identify_by);
-      const mergedSet = set_merge(set, set2, identify_by);
+      const set2 = construct_better_set([3, 4, 5]);
+      const mergedSet = merge_set(set, set2);
       expect(set_get_length(mergedSet)).toBe(5);
       expect(to_array(mergedSet).sort()).toEqual([1, 2, 3, 4, 5]);
     });
@@ -61,13 +59,13 @@ import {
     });
   
     test('map transforms set values', () => {
-      const mappedArray = map_to_new_set(set, (value) => value * 2, identify_by);
+      const mappedArray = set_map(set, (value) => value * 2);
       expect(to_array(mappedArray)).toEqual([2, 4, 6]);
     });
   
     test('is_subset_of checks if one set is a subset of another', () => {
-      const subset = construct_better_set([1, 2], identify_by);
-      const superset = construct_better_set([1, 2, 3, 4], identify_by);
+      const subset = construct_better_set([1, 2]);
+      const superset = construct_better_set([1, 2, 3, 4]);
       expect(is_subset_of(subset, set)).toBe(true);
       expect(is_subset_of(set, subset)).toBe(false);
       expect(is_subset_of(set, superset)).toBe(true);
@@ -80,9 +78,9 @@ import {
     });
     
     test('flat_map transforms and flattens set values', () => {
-      const result = set_flat_map(set, (value) => construct_better_set([value, value * 2], identify_by));
+      const result = set_flat_map(set, (value) => construct_better_set([value, value * 2]));
       expect(set_get_length(result)).toBe(5);
-
+      // @ts-ignore
       expect(to_array(result).sort()).toEqual([1, 2, 3, 4, 6]);
     });
 
@@ -110,14 +108,17 @@ import {
 
     test('make_multi_dimensional_set creates a nested set structure', () => {
       const data = [1, [2, 3], [4, [5, 6]]];
-      const multiDimSet = make_multi_dimensional_set(data);
+      const multiDimSet = construct_better_set(data);
       expect(set_get_length(multiDimSet)).toBe(3);
       
       const firstInner = get_value(multiDimSet, 1);
+      // @ts-ignore
       expect(set_get_length(firstInner)).toBe(2);
+      // @ts-ignore
       expect(to_array(firstInner)).toEqual([2, 3]);
       
       const secondInner = get_value(multiDimSet, 2);
+      // @ts-ignore
       expect(set_get_length(secondInner)).toBe(2);
       // @ts-ignore
       expect(set_get_length(get_value(secondInner, 1))).toBe(2);

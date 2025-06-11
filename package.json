@@ -1,6 +1,6 @@
 {
   "name": "generic-handler",
-  "version": "0.3.18",
+  "version": "0.3.19",
   "module": "index.ts",
   "devDependencies": {
     "@types/bun": "latest"
@@ -10,9 +10,11 @@
   },
   "type": "module",
   "dependencies": {
+    "@types/uuid": "^10.0.0",
     "crypto-js": "^4.2.0",
     "fp-ts": "^2.16.9",
     "mangodb": "^1.0.0",
-    "runtypes": "^6.7.0"
+    "runtypes": "^6.7.0",
+    "uuid": "^11.1.0"
   }
 }

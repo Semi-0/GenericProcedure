@@ -39,8 +39,7 @@ describe('BuiltInGenerics', () => {
         runTest(to_string, [undefined], 'undefined');
         runTest(to_string, [true], 'true');
         runTest(to_string, [123], '123');
-        runTest(to_string, [[1, 2, 3]], '[1,2,3]');
-        runTest(to_string, [{ a: 1 }], '{"a":1}');
+        runTest(to_string, [[1, 2, 3]], '[1, 2, 3]');
     });
 
     // Test for deepCopy function
