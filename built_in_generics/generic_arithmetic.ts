@@ -3,7 +3,6 @@ import { all_match, match_args, one_of_args_match } from "../Predicates"
 import {  is_array, is_atom, is_null, is_number, is_string } from "./generic_predicates"
 
 import { guard } from "./other_generic_helper"
-import { add_item, BetterSet, difference_set, is_better_set, is_subset_of, merge_set, remove_item } from "./generic_better_set"
 import { compose, orCompose } from "./generic_combinator"
 
 
@@ -86,10 +85,6 @@ define_generic_procedure_handler(greater_than,  all_match(is_array), (a: any[], 
     return a.length > b.length
 }) 
 
-define_generic_procedure_handler(greater_than, all_match(is_better_set), (a: BetterSet<any>, b: BetterSet<any>) => {
-    return is_subset_of(b, a)
-})
-
 export const less_than = construct_simple_generic_procedure(
     "less_than",
     2,
@@ -97,10 +92,6 @@ export const less_than = construct_simple_generic_procedure(
         return a < b
     }
 ) 
-
-define_generic_procedure_handler(less_than, all_match(is_better_set), (a: BetterSet<any>, b: BetterSet<any>) => {
-    return is_subset_of(a, b)
-}) 
 
 define_generic_procedure_handler(less_than, all_match(is_array), (a: any[], b: any[]) => {
     return a.length < b.length

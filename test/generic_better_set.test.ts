@@ -1,20 +1,12 @@
 import {
     BetterSet,
     construct_better_set,
-    set_add_item,
-    set_remove_item,
-    set_has,
-    set_filter,
-    set_get_length,
-    to_array,
     is_subset_of,
     get_value,
-    set_flat_map,
-    set_reduce_right,
     set_union,
-    set_map,
-    merge_set
   } from '../built_in_generics/generic_better_set';
+
+  import { length, has, add_item, remove_item, filter, map, reduce, reduce_right, flat_map, to_array, for_each, first, last, every, some, has_all, is_empty, find } from '../built_in_generics/generic_collection';
 
   import { describe, beforeEach, test, expect } from 'bun:test';
   
@@ -27,39 +19,39 @@ import {
     });
   
     test('construct_better_set creates a set with initial values', () => {
-      expect(set_get_length(set)).toBe(3);
-      expect(set_has(set, 1)).toBe(true);
-      expect(set_has(set, 2)).toBe(true);
-      expect(set_has(set, 3)).toBe(true);
+      expect(length(set)).toBe(3);
+      expect(has(set, 1)).toBe(true);
+      expect(has(set, 2)).toBe(true);
+      expect(has(set, 3)).toBe(true);
     });
   
     test('add adds a new item to the set', () => {
-      const newSet = set_add_item(set, 4);
-      expect(set_get_length(newSet)).toBe(4);
-      expect(set_has(newSet, 4)).toBe(true);
+      const newSet = add_item(set, 4);
+      expect(length(newSet)).toBe(4);
+      expect(has(newSet, 4)).toBe(true);
     });
   
     test('remove removes an item from the set', () => {
-      const newSet = set_remove_item(set, 2);
-      expect(set_get_length(newSet)).toBe(2);
-      expect(set_has(newSet, 2)).toBe(false);
+      const newSet = remove_item(set, 2);
+      expect(length(newSet)).toBe(2);
+      expect(has(newSet, 2)).toBe(false);
     });
   
     test('merge combines two sets', () => {
       const set2 = construct_better_set([3, 4, 5]);
-      const mergedSet = merge_set(set, set2);
-      expect(set_get_length(mergedSet)).toBe(5);
+      const mergedSet = set_union(set, set2);
+      expect(length(mergedSet)).toBe(5);
       expect(to_array(mergedSet).sort()).toEqual([1, 2, 3, 4, 5]);
     });
   
     test('filter creates a new set with filtered values', () => {
-      const filteredSet = set_filter(set, (value) => value % 2 === 0);
-      expect(set_get_length(filteredSet)).toBe(1);
-      expect(set_has(filteredSet, 2)).toBe(true);
+      const filteredSet = filter(set, (value) => value % 2 === 0);
+      expect(length(filteredSet)).toBe(1);
+      expect(has(filteredSet, 2)).toBe(true);
     });
   
     test('map transforms set values', () => {
-      const mappedArray = set_map(set, (value) => value * 2);
+      const mappedArray = map(set, (value) => value * 2);
       expect(to_array(mappedArray)).toEqual([2, 4, 6]);
     });
   
@@ -78,27 +70,27 @@ import {
     });
     
     test('flat_map transforms and flattens set values', () => {
-      const result = set_flat_map(set, (value) => construct_better_set([value, value * 2]));
-      expect(set_get_length(result)).toBe(5);
+      const result = flat_map(set, (value) => construct_better_set([value, value * 2]));
+      expect(length(result)).toBe(5);
       // @ts-ignore
       expect(to_array(result).sort()).toEqual([1, 2, 3, 4, 6]);
     });
 
     test('reduce_right reduces set values from right to left', () => {
-      const result = set_reduce_right((acc, value) => acc - value, set, 10);
+      const result = reduce_right(set, (acc, value) => acc - value, 10);
       expect(result).toBe(4); // 10 - 3 - 2 - 1 = 4
     });
 
     test('set_union combines two sets', () => {
    
       const unionSet = set_union(1, 2);
-      expect(set_get_length(unionSet)).toBe(2);
+      expect(length(unionSet)).toBe(2);
       expect(to_array(unionSet).sort()).toEqual([1, 2]);
     });
 
     test('set_map only execute the function once for each value', () => {
       let count = 0
-      const mappedSet = set_map(set, (value) => {
+      const mappedSet = map(set, (value) => {
         count++
         return value * 2
       })
@@ -109,19 +101,19 @@ import {
     test('make_multi_dimensional_set creates a nested set structure', () => {
       const data = [1, [2, 3], [4, [5, 6]]];
       const multiDimSet = construct_better_set(data);
-      expect(set_get_length(multiDimSet)).toBe(3);
+      expect(length(multiDimSet)).toBe(3);
       
       const firstInner = get_value(multiDimSet, 1);
       // @ts-ignore
-      expect(set_get_length(firstInner)).toBe(2);
+      expect(length(firstInner)).toBe(2);
       // @ts-ignore
       expect(to_array(firstInner)).toEqual([2, 3]);
       
       const secondInner = get_value(multiDimSet, 2);
       // @ts-ignore
-      expect(set_get_length(secondInner)).toBe(2);
+      expect(length(secondInner)).toBe(2);
       // @ts-ignore
-      expect(set_get_length(get_value(secondInner, 1))).toBe(2);
+      expect(length(get_value(secondInner, 1))).toBe(2);
       // @ts-ignore
       expect(to_array(get_value(secondInner, 1))).toEqual([5, 6]);
     });

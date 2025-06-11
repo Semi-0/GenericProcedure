@@ -1,16 +1,12 @@
 import {
   BetterSet,
   construct_better_set,
-  set_filter,
-  set_map,
-  set_get_length,
   is_better_set,
-  set_for_each,
   get_value,
-  to_array
 } from '../built_in_generics/generic_better_set';
 
 import { describe, test, expect } from 'bun:test';
+import { length, has, add_item, remove_item, filter, map, reduce, reduce_right, flat_map, to_array, for_each, first, last, every, some, has_all, is_empty, find } from '../built_in_generics/generic_collection';
 
 describe('Nested BetterSet Operations', () => {
   test('construct nested BetterSet with arrays creates valid nested sets', () => {
@@ -18,7 +14,7 @@ describe('Nested BetterSet Operations', () => {
     const nestedSet = construct_better_set(simpleNestedData);
     
     expect(is_better_set(nestedSet)).toBe(true);
-    expect(set_get_length(nestedSet)).toBe(3);
+    expect(length(nestedSet)).toBe(3);
     
     // Check that the nested array became a BetterSet
     const array = to_array(nestedSet);
@@ -26,7 +22,7 @@ describe('Nested BetterSet Operations', () => {
     array.forEach(item => {
       if (is_better_set(item)) {
         foundNestedSet = true;
-        expect(set_get_length(item as unknown as BetterSet<any>)).toBe(2);
+        expect(length(item as unknown as BetterSet<any>)).toBe(2);
       }
     });
     expect(foundNestedSet).toBe(true);
@@ -34,10 +30,10 @@ describe('Nested BetterSet Operations', () => {
 
   test('mapping preserves BetterSet validity', () => {
     const set = construct_better_set([1, 2, 3]);
-    const mapped = set_map(set, x => x * 2);
+    const mapped = map(set, x => x * 2);
     
     expect(is_better_set(mapped)).toBe(true);
-    expect(set_get_length(mapped)).toBe(3);
+    expect(length(mapped)).toBe(3);
     
     const values = to_array(mapped);
     expect(values.sort()).toEqual([2, 4, 6]);
@@ -45,10 +41,10 @@ describe('Nested BetterSet Operations', () => {
 
   test('filtering preserves BetterSet validity', () => {
     const set = construct_better_set([1, 2, 3, 4, 5]);
-    const filtered = set_filter(set, x => x % 2 === 0);
+    const filtered = filter(set, x => x % 2 === 0);
     
     expect(is_better_set(filtered)).toBe(true);
-    expect(set_get_length(filtered)).toBe(2);
+    expect(length(filtered)).toBe(2);
     
     const values = to_array(filtered);
     expect(values.sort()).toEqual([2, 4]);
@@ -58,9 +54,9 @@ describe('Nested BetterSet Operations', () => {
     const set = construct_better_set([1, 2, 3]);
     const collected: number[] = [];
     
-    set_for_each(value => {
+    for_each(set, value => {
       collected.push(value as number);
-    }, set);
+    });
     
     expect(collected.length).toBe(3);
     expect(collected.sort()).toEqual([1, 2, 3]);
@@ -70,7 +66,7 @@ describe('Nested BetterSet Operations', () => {
     const set = construct_better_set([10, 20, 30]);
     const array = to_array(set);
     
-    for (let i = 0; i < set_get_length(set); i++) {
+    for (let i = 0; i < length(set); i++) {
       const value = get_value(set, i);
       expect(array).toContain(value);
     }
@@ -82,7 +78,7 @@ describe('Nested BetterSet Operations', () => {
     const outerSet = construct_better_set([innerSet, 3]);
     
     expect(is_better_set(outerSet)).toBe(true);
-    expect(set_get_length(outerSet)).toBe(2);
+    expect(length(outerSet)).toBe(2);
     
     // Find the nested set
     const values = to_array(outerSet);
@@ -90,7 +86,7 @@ describe('Nested BetterSet Operations', () => {
     values.forEach(value => {
       if (is_better_set(value)) {
         nestedSetFound = true;
-        expect(set_get_length(value as unknown as BetterSet<any>)).toBe(2);
+        expect(length(value as unknown as BetterSet<any>)).toBe(2);
       }
     });
     expect(nestedSetFound).toBe(true);

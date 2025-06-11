@@ -1,75 +1,102 @@
 // a better set that is more flexible and powerful than the built-in set
 
 import {construct_simple_generic_procedure, define_generic_procedure_handler} from "../GenericProcedure"
-import { match_args, register_predicate } from "../Predicates"
+import { all_match, match_args, register_predicate } from "../Predicates"
 import { to_string } from "./generic_conversation"
-import { map, filter, reduce } from "./generic_array_operation"
+import { map, filter, reduce, add_item, remove_item, copy, has, length, for_each, reduce_right, flat_map, to_array, has_all, is_empty, find, every, first, last } from "./generic_collection"
 import { is_any, is_array, is_function } from "./generic_predicates"
-import { v4 as uuidv4 } from 'uuid';
 import { createHash } from 'crypto';
 import { compose } from "./generic_combinator"
-
+import { greater_than, is_equal, less_than } from "./generic_arithmetic"
+import { some } from "./generic_collection"
 export const identify_by = construct_simple_generic_procedure("identify_by", 1, to_string)
-
-define_generic_procedure_handler(identify_by, match_args(is_array), (a: any) => {
-    return createHash('sha256').update(JSON.stringify(a)).digest('hex')
-})
 
 export class BetterSet<T> implements Iterable<T> {
     [Symbol.iterator](): Iterator<T> {
         return this.meta_data.values()
     }
-    private meta_data: Map<string, any> = new Map()
+    private meta_data: Map<string, T> = new Map()
 
-    constructor(meta_data: Map<string, any>){
+    constructor(meta_data: Map<string, T> = new Map()){
         this.meta_data = meta_data
     }
 
-    add_item(item: T): BetterSet<T> {
+    private _add_item(item: T): BetterSet<T> {
         const meta_data = new Map(this.meta_data)
         meta_data.set(identify_by(item), item)
         return new BetterSet(meta_data)
     }
 
-    remove_item(item: T): BetterSet<T> {
+    private _remove_item(item: T): BetterSet<T> {
         const meta_data = new Map(this.meta_data)
         meta_data.delete(identify_by(item))
         return new BetterSet(meta_data)
     }
 
-    copy(): BetterSet<T> {
+    private _copy(): BetterSet<T> {
         const meta_data = new Map(this.meta_data)
         return new BetterSet(meta_data)
     }
-
-    first(): T | undefined {
-        return this.meta_data.values().next().value
-    } 
-
-    rest(): BetterSet<T> {
-        const meta_data = new Map(this.meta_data)
-        meta_data.delete(this.meta_data.keys().next().value)
-        return new BetterSet(meta_data)
-    }
-
-    has(item: T): boolean {
+    private _has(item: T): boolean {
         return this.meta_data.has(identify_by(item))
     }
 
-    length(): number {
+    private _length(): number {
         return this.meta_data.size
     } 
 
+    public static is_better_set = register_predicate("is_better_set", (a: any) => a instanceof BetterSet && typeof a[Symbol.iterator] === "function")
+
+    static {
+        define_generic_procedure_handler(add_item, 
+            match_args(this.is_better_set, is_any), 
+            (set: BetterSet<any>, item: any) => set._add_item(item))
+        define_generic_procedure_handler(remove_item, 
+            match_args(this.is_better_set, is_any), 
+            (set: BetterSet<any>, item: any) => set._remove_item(item))
+        define_generic_procedure_handler(copy, 
+            match_args(this.is_better_set), 
+            (set: BetterSet<any>) => set._copy())
+        define_generic_procedure_handler(has, 
+            match_args(this.is_better_set, is_any), (set: BetterSet<any>, item: any) => set._has(item))
+        define_generic_procedure_handler(length, 
+            match_args(this.is_better_set), (set: BetterSet<any>) => set._length())
+    }
 }
 
-export const is_better_set = register_predicate("is_better_set", (a: any) => a !== null && a !== undefined &&
-                                         a.add_item !== undefined && a.remove_item !== undefined && a.copy !== undefined)
+export const is_better_set = BetterSet.is_better_set
 
+define_generic_procedure_handler(
+    identify_by, 
+    match_args(is_array), 
+    (a: any[]) => {
+        const items = a.map(i => identify_by(i));
+        items.sort(); // ensure order-independence
+        return createHash('sha256')
+                .update(JSON.stringify(items))
+                .digest('hex') 
+})
 
-define_generic_procedure_handler(identify_by, match_args(is_better_set), compose(to_array, identify_by))
+define_generic_procedure_handler(
+    identify_by,
+    match_args(is_better_set),
+    (s: BetterSet<any>) => {
+        const items = to_array(s).map(i => identify_by(i));
+        items.sort(); // ensure order-independence
+        return createHash('sha256')
+        .update(JSON.stringify(items))
+        .digest('hex');
+    }
+);
+                                          
 
-define_generic_procedure_handler(to_string, match_args(is_better_set), (a: BetterSet<any>) => {
-    return 'BetterSet[' + reduce(a, (acc, value) => acc + to_string(value), '')   + ']'
+define_generic_procedure_handler(
+    to_string, 
+    match_args(is_better_set), 
+    (a: BetterSet<any>) => {
+        return 'BetterSet[' + 
+              reduce(a, (acc, value) => acc + to_string(value), '')   
+              + ']'
 })
 
 export function to_set_item(value: any): any{
@@ -96,62 +123,56 @@ export function ensure_valid_better_set<T>(obj: any): BetterSet<T> {
     return obj;
 }
 
-export function set_add_item<T>(set: BetterSet<T>, item: T): BetterSet<T>{
-    return set.add_item(item)
-} 
-
-export function set_remove_item<T>(set: BetterSet<T>, item: T): BetterSet<T>{
-    return set.remove_item(item)
-} 
-
-export function set_for_each<T>(action: (item: T) => void, set: BetterSet<T>): void {
+define_generic_procedure_handler(for_each, match_args(is_better_set, is_function), (set: BetterSet<any>, action: (item: any) => void) => {
     for (const item of set){
         action(item)
     }
-}
+})
 
-
-export function merge_set<T>(set1: BetterSet<T>, set2: BetterSet<T>): BetterSet<T>{
-    var result = set1.copy()
-    set_for_each((value) => {
-        result = result.add_item(value)
-    }, set2)
-    return result
-}
-
-export function difference_set<T>(set1: BetterSet<T>, set2: BetterSet<T>): BetterSet<T>{
-    var result = set1.copy()
-    set_for_each((value) => {
-        if (set_has(set2, value)){
-            result = result.remove_item(value)
-        }
-    }, set1)
-    return result
-}
-
-
-export function set_has<T>(set: BetterSet<T>, value: T): boolean {
-    return set.has(value)
-}
-
-export function set_filter<T>(set: BetterSet<T>, predicate: (value: T) => boolean): BetterSet<T> {
-    var result = set.copy()
-    set_for_each((value) => {
+define_generic_procedure_handler(filter, match_args(is_better_set, is_function), (set: BetterSet<any>, predicate: (item: any) => boolean) => {
+    var result = copy(set)
+    for_each(set, (value) => {
         if (!predicate(value)){
-            result = result.remove_item(value)
+            result = remove_item(result, value)
         }
-    }, set)
+    })
+    return result
+})
+
+define_generic_procedure_handler(map, match_args(is_better_set, is_function), (set: BetterSet<any>, mapper: (item: any) => any) => {
+    var result = construct_better_set<any>([])
+    for_each(set, (value) => {
+        result = add_item(result, mapper(value))
+    })
+    return result
+})
+
+define_generic_procedure_handler(reduce, match_args(is_better_set, is_function, is_any), (set: BetterSet<any>, reducer: (acc: any, value: any) => any, initial: any) => {
+    var result = initial
+    for_each(set, (value) => {
+        result = reducer(result, value)
+    })
+    return result
+})
+
+
+export function set_merge<T>(set1: BetterSet<T>, set2: BetterSet<T>): BetterSet<T>{
+    var result = copy(set1)
+    for_each(set2, (value) => {
+        result = add_item(result, value)
+    })
     return result
 }
 
-export function set_map<A, B>(set: BetterSet<A>, mapper: (value: A) => B): BetterSet<B> {
-    var result = construct_better_set<B>([])
-    set_for_each((value) => {
-        result = result.add_item(mapper(value as A) as B)
-    }, set)
+export function set_difference<T>(set1: BetterSet<T>, set2: BetterSet<T>): BetterSet<T>{
+    var result = copy(set1)
+    for_each(set1, (value) => {
+        if (has(set2, value)){
+            result = remove_item(result, value)
+        }
+    })
     return result
 }
-
 
 export const set_union = (set1: any, set2: any) => {
     // Special case handling for non-BetterSet arguments
@@ -167,148 +188,160 @@ export const set_union = (set1: any, set2: any) => {
         set2 = construct_better_set([set2]);
     }
     
-    return merge_set(set1, set2);
+    return set_merge(set1, set2);
 }
 
 
-export const set_reduce_right = <T, R>(f: (acc: R, value: T) => R, set: BetterSet<T>, initial: R): R => {
-    ensure_valid_better_set(set);
-    const values = to_array(set);
-    let result = initial;
+
+define_generic_procedure_handler(reduce_right,
+    match_args(is_better_set, is_function, is_any),
+    (set: BetterSet<any>, reducer: (acc: any, value: any) => any, initial: any) => {
+        return reduce_right(to_array(set), reducer, initial)
+    }
+)
+
+
+define_generic_procedure_handler(flat_map,
+    match_args(is_better_set, is_function),
+    (set: BetterSet<any>, mapper: (item: any) => any) => {
+        var flatten_set = construct_better_set([]);
     
-    for (let i = set_get_length(set) - 1; i >= 0; i--) {
-        result = f(result, values[i]);
-    }
+        for_each(set,(value) => {
+            const mapped = mapper(value);
+            if (is_better_set(mapped)) {
+                // If mapper returns a set, add all its values to the result
+                for_each(mapped, (innerValue) => {
+                    flatten_set = add_item(flatten_set, innerValue);
+                })
+            } else {
+                // If mapper returns a single value, add it to the result
+                flatten_set = add_item(flatten_set, mapped);
+            }
+        });
     
-    return result;
-};
-
-export function set_flat_map<A,B>(set: BetterSet<A>, mapper: (value: A) => B): BetterSet<B> {
-    var flatten_set = construct_better_set<B>([]);
-    
-    set_for_each((value) => {
-        const mapped = mapper(value as A);
-        if (is_better_set(mapped)) {
-            // If mapper returns a set, add all its values to the result
-            set_for_each((innerValue) => {
-                flatten_set = flatten_set.add_item(innerValue);
-            }, mapped as BetterSet<B>);
-        } else {
-            // If mapper returns a single value, add it to the result
-            flatten_set = flatten_set.add_item(mapped as B);
-        }
-    }, set);
-
-    return flatten_set
-}
-
-export function set_reduce<T, B>(set: BetterSet<T>, reducer: (acc: B, value: T) => B, initial: B): B {
-    ensure_valid_better_set(set);
-    var result = initial;
-
-    set_for_each((value) => {
-        result = reducer(result, value as T)
-    }, set)
-    return result;
-}
-
-export function set_find<T>(predicate: (value: T) => boolean, set: BetterSet<T>): T | undefined {
-   var set_in_loop = set.copy()
-   for (let i = 0; i < set.length(); i++){
-    if (set.first() !== undefined){
-        if (predicate(set.first() as T)){
-            return set.first() as T
-        }
-        else{
-            set_in_loop = set_in_loop.rest()
-        }
+        return flatten_set
     }
-    else{
-        throw new Error('set_find: first item is undefined')
+)
+
+
+define_generic_procedure_handler(is_empty,
+    match_args(is_better_set),
+    (set: BetterSet<any>) => {
+        return length(set) === 0
     }
-   }
-}
+)
 
-export function set_get_length<T>(set: BetterSet<T>): number {
-    return set.length();
-}
-
-export function to_array<T>(set: BetterSet<T>): T[] {
-    var result: T[] = []
-    set_for_each((value) => {
-        result.push(value)
-    }, set)
-    return result
-}
-
-export function set_has_all<T>(set1: BetterSet<T>, set2: BetterSet<T>): boolean {
-    for (const item of set2){
-        if (!set_has(set1, item)){
-            return false
+define_generic_procedure_handler(find,
+    match_args(is_better_set, is_function),
+    (set: BetterSet<any>, predicate: (item: any) => boolean) => {
+        for (const item of set){
+            if (predicate(item)){
+                return item
+            }
         }
+        return undefined
     }
-    return true
-}
+)
+
+
+define_generic_procedure_handler(to_array,
+    match_args(is_better_set),
+    (set: BetterSet<any>) => {
+        return Array.from(set)
+    }
+)
+
+define_generic_procedure_handler(has_all,
+    match_args(is_better_set, is_better_set),
+    (set1: BetterSet<any>, set2: BetterSet<any>) => {
+        for (const item of set2){
+            if (!has(set1, item)){
+                return false
+            }
+        }
+        return true 
+    }
+)
+
 
 export function is_subset_of<T>(set1: BetterSet<T>, set2: BetterSet<T>): boolean {
-    return (set_get_length(set1) <= set_get_length(set2)) && set_has_all(set2, set1);
+    return (length(set1) <= length(set2)) && has_all(set2, set1);
 }
 
 export function get_value<T>(set: BetterSet<T>, index: number): T {
     return to_array(set)[index]
 }
 
-export function set_equal<T>(set1: BetterSet<T>, set2: BetterSet<T>): boolean {
-    return set_get_length(set1) === set_get_length(set2) && 
-                                 set_has_all(set1, set2) && 
-                                 set_has_all(set2, set1);
-} 
+define_generic_procedure_handler(is_equal, 
+    all_match(is_better_set),
+    (set1: BetterSet<any>, set2: BetterSet<any>) => {
+        return length(set1) === length(set2) && 
+            has_all(set1, set2) && 
+            has_all(set2, set1);
+    }
+)
 
-export function set_smaller_than<T>(set1: BetterSet<T>, set2: BetterSet<T>): boolean {
-    return set_get_length(set1) < set_get_length(set2) && set_has_all(set1, set2);
-}
+define_generic_procedure_handler(less_than,
+    all_match(is_better_set),
+    (set1: BetterSet<any>, set2: BetterSet<any>) => {
+        return length(set1) < length(set2) && has_all(set1, set2);
+    }
+)
 
-export function set_larger_than<T>(set1: BetterSet<T>, set2: BetterSet<T>): boolean {
-    return set_smaller_than(set2, set1);
-}
+
+define_generic_procedure_handler(greater_than,
+    all_match(is_better_set),
+    (set1: BetterSet<any>, set2: BetterSet<any>) => {
+        return length(set1) > length(set2) && has_all(set1, set2);
+    }
+)
+
+
 
 export function set_remove<T>(set: BetterSet<T>, ...elts: T[]): BetterSet<T>{
-    var result = set.copy()
-    set_for_each((value) => {
+    var result = copy(set)
+    for_each(set, (value) => {
         if (elts.includes(value)){
-            result = result.remove_item(value)
+            result = remove_item(result, value)
         }
-    }, set)
+    })
     return result
 }
 
-export function set_every<T>(set: BetterSet<T>, predicate: (value: T) => boolean): boolean {
-    for (const item of set){
-        if (!predicate(item)){
-            return false
+define_generic_procedure_handler(every,
+    match_args(is_better_set, is_function),
+    (set: BetterSet<any>, predicate: (item: any) => boolean) => {
+        for (const item of set){
+            if (!predicate(item)){
+                return false
+            }
         }
+        return true
     }
-    return true
-}
+)
 
-export function set_some<T>(set: BetterSet<T>, predicate: (value: T) => boolean): boolean {
-    for (const item of set){
-        if (predicate(item)){
-            return true
+define_generic_procedure_handler(some,
+    match_args(is_better_set, is_function),
+    (set: BetterSet<any>, predicate: (item: any) => boolean) => {
+        for (const item of set){
+            if (predicate(item)){
+                return true
+            }
         }
+        return false
     }
-    return false
-}
+)
 
-define_generic_procedure_handler(map, match_args(is_better_set, is_function), set_map)
+define_generic_procedure_handler(first,
+    match_args(is_better_set),
+    (set: BetterSet<any>) => {
+        return first(to_array(set))
+    }
+)
 
-define_generic_procedure_handler(filter, match_args(is_better_set, is_function), set_filter)
-
-define_generic_procedure_handler(reduce, match_args(is_better_set, is_function, is_any), set_reduce)
-
-// ... existing code ...
-
-
-export function force_load_generic_better_set(){
- 
-}
+define_generic_procedure_handler(last,
+    match_args(is_better_set),
+    (set: BetterSet<any>) => {
+        return last(to_array(set))
+    }
+)
