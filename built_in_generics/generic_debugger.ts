@@ -1,7 +1,8 @@
 import { to_string } from "./generic_conversation"
 
 export function trace_function(logger: (log: string) => void){
-    (name: string, f: (...args: any[]) => any) => {
+
+    return (name: string, f: (...args: any[]) => any) => {
         return (...args: any[]) => {
             logger(name + " called with args: " +  to_string(args) + "\n")
             const result = f(...args)
@@ -11,3 +12,6 @@ export function trace_function(logger: (log: string) => void){
     }
 }
 
+export function log_tracer(name: string, f: (...args: any[]) => any){
+    return trace_function(console.log)(name, f)
+}
