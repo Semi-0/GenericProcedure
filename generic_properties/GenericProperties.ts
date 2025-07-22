@@ -442,7 +442,7 @@ export const property_getter = (property: Property, type: PredicateFunction) => 
   const procedure = construct_simple_generic_procedure(
     `get_${property.name}`, 
     1, 
-    () => throw_error("ObjectCell", "property_getter", `Getter not implemented for ${property.name}`)
+    throw_error("ObjectCell", "property_getter", `Getter not implemented for ${property.name}`)
   );
   
 
@@ -482,7 +482,7 @@ export const property_setter = (property: Property, type: PredicateFunction, val
   const procedure = construct_simple_generic_procedure(
     `set_${property.name}!`, 
     2, 
-    () => throw_error("ObjectCell", "property_setter", `Setter not implemented for ${property.name}`)
+    throw_error("ObjectCell", "property_setter", `Setter not implemented for ${property.name}`)
   );
   
   
@@ -525,7 +525,7 @@ export const property_modifier = (property: Property, type: PredicateFunction, v
   const procedure = construct_simple_generic_procedure(
     `${property.name}_${noun}`, 
     2, 
-    () => throw_error("ObjectCell", "property_modifier", 
+    throw_error("ObjectCell", "property_modifier", 
                        `Modifier not implemented for ${property.name}_${noun}`)
   );
   

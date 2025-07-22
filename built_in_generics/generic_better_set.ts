@@ -5,7 +5,7 @@ import { all_match, match_args, register_predicate } from "../Predicates"
 import { to_string } from "./generic_conversation"
 import { map, filter, reduce, add_item, remove_item, copy, has, length, for_each, reduce_right, flat_map, to_array, has_all, is_empty, find, every, first, last } from "./generic_collection"
 import { is_any, is_array, is_function } from "./generic_predicates"
-import { createHash } from 'crypto';
+
 import { compose } from "./generic_combinator"
 import { greater_than, is_equal, less_than } from "./generic_arithmetic"
 import { some } from "./generic_collection"
@@ -66,16 +66,39 @@ export class BetterSet<T> implements Iterable<T> {
 
 export const is_better_set = BetterSet.is_better_set
 
+function simpleHash(str: string): number {
+    let hash = 5381;
+    for (let i = 0; i < str.length; i++) {
+        hash = ((hash << 5) + hash) + str.charCodeAt(i); // hash * 33 + c
+    }
+    return hash >>> 0; // Convert to unsigned 32-bit integer
+}
+
+function stableStringify(obj: any): string {
+    if (Array.isArray(obj)) {
+        return `[${obj.map(stableStringify).join(',')}]`;
+    } else if (obj && typeof obj === 'object') {
+        return `{${Object.keys(obj).sort().map(
+            k => JSON.stringify(k) + ':' + stableStringify(obj[k])
+        ).join(',')}}`;
+    } else {
+        return JSON.stringify(obj);
+    }
+}
+
+function hashObjectSync(obj: any): string {
+    return simpleHash(stableStringify(obj)).toString(16);
+}
+
 define_generic_procedure_handler(
     identify_by, 
     match_args(is_array), 
     (a: any[]) => {
         const items = a.map(i => identify_by(i));
         items.sort(); // ensure order-independence
-        return createHash('sha256')
-                .update(JSON.stringify(items))
-                .digest('hex') 
-})
+        return hashObjectSync(items);
+    }
+);
 
 define_generic_procedure_handler(
     identify_by,
@@ -83,9 +106,7 @@ define_generic_procedure_handler(
     (s: BetterSet<any>) => {
         const items = to_array(s).map(i => identify_by(i));
         items.sort(); // ensure order-independence
-        return createHash('sha256')
-        .update(JSON.stringify(items))
-        .digest('hex');
+        return hashObjectSync(items);
     }
 );
                                           
