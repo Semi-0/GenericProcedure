@@ -9,7 +9,22 @@ import { is_any, is_array, is_function } from "./generic_predicates"
 import { compose } from "./generic_combinator"
 import { greater_than, is_equal, less_than } from "./generic_arithmetic"
 import { some } from "./generic_collection"
-export const identify_by = construct_simple_generic_procedure("identify_by", 1, to_string)
+export const identify_by = construct_simple_generic_procedure("identify_by", 1, 
+    (x) => {
+        if (is_array(x)){
+            return x.map(identify_by).join(",")
+        }
+        else{
+            try{
+                return to_string(x)
+            }
+            catch(e){
+                throw new Error("Cannot identify: " + x + " " + e)
+            }
+        }
+    }
+)
+
 
 export class BetterSet<T> implements Iterable<T> {
     [Symbol.iterator](): Iterator<T> {

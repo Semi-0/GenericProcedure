@@ -1,3 +1,4 @@
+import { to_string } from "../built_in_generics/generic_conversation";
 import { throw_error } from "../built_in_generics/other_generic_helper";
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure";
 import { match_args, PredicateFunction, register_predicate } from "../Predicates";
@@ -613,3 +614,47 @@ export const property_remover = (property: Property, type: PredicateFunction, va
   );
 };
 
+
+
+export interface InstantiatedType {
+    __type: string
+    __get_properties: () => string[]
+    __get_binding: (property: Property) => any
+    observe: (property: Property, callback: Function) => any
+    unobserve: (property: Property, callback?: Function) => any
+}
+
+export const is_instantiated_type = register_predicate(
+    "is_type_predicate",
+    (x: any): x is InstantiatedType => {
+        return  x.__type !== undefined && x.__get_properties !== undefined 
+    }
+)
+
+export const is_default_prop = (x: string) =>
+    x === "___type" ||
+    x === "__get_properties" ||
+    x === "__get_binding" ||
+    x === "observe" ||
+    x === "unobserve"
+
+
+define_generic_procedure_handler(
+    to_string,
+    match_args(is_instantiated_type),
+    (x: InstantiatedType) => {
+     
+        const report = "typed object:" +
+        x.__type + "\n" + "property: " +  "\n" + 
+        Object.keys(x).map((key: string) => {
+           if (!is_default_prop(key)){
+            return key + ": " + to_string(x[key as keyof InstantiatedType])
+           }
+           else{
+            return "" 
+           }
+        }).join("\n")
+
+        return report
+    }
+)

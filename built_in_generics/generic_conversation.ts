@@ -7,7 +7,12 @@ export const to_string = construct_simple_generic_procedure(
     1,
     (a: string) => {
         if (typeof a !== "string") {
-            throw new Error("default generic to_string: expected a string, but got " + typeof a)
+            try{
+                return JSON.stringify(a)
+            }
+            catch(e){
+                throw new Error("default generic to_string: expected a string, but got " + typeof a + " " + e)
+            }
         }
         return a
     }
