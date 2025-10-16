@@ -1,6 +1,6 @@
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure"
 import { all_match, match_args, one_of_args_match } from "../Predicates"
-import {  is_array, is_atom, is_null, is_number, is_string } from "./generic_predicates"
+import {  is_array, is_atom, is_null, is_number, is_string, is_object } from "./generic_predicates"
 
 import { guard } from "./other_generic_helper"
 import { compose, orCompose } from "./generic_combinator"
@@ -70,6 +70,38 @@ define_generic_procedure_handler(is_equal,
     all_match(is_array),
     (a: any[], b: any[]) => {
         return a.length === b.length && a.every((x, i) => is_equal(x, b[i]))
+    }
+)
+
+define_generic_procedure_handler(is_equal,
+    all_match(is_object),
+    (a: any, b: any) => {
+        // Special handling for ErrorPair objects
+        if (a.identifier === "error_pair" && b.identifier === "error_pair") {
+            return is_equal(a.get_error(), b.get_error()) && is_equal(a.get_value(), b.get_value())
+        }
+        
+        // General object equality
+        const aKeys = Object.keys(a).sort()
+        const bKeys = Object.keys(b).sort()
+        
+        if (aKeys.length !== bKeys.length) return false
+        
+        // Check if key arrays match
+        for (let i = 0; i < aKeys.length; i++) {
+            if (aKeys[i] !== bKeys[i]) return false
+        }
+        
+        // Check if all values are equal, skipping functions
+        for (const key of aKeys) {
+            if (typeof a[key] === 'function' && typeof b[key] === 'function') {
+                // Skip function properties
+                continue
+            }
+            if (!is_equal(a[key], b[key])) return false
+        }
+        
+        return true
     }
 )
 

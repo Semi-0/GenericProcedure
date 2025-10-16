@@ -121,7 +121,8 @@ export const add_item =  construct_simple_generic_procedure(
     2,
     (array: any[], item: any) => {
         guard(is_array(array), throw_type_mismatch("add_item", "array", array.toString()))
-        return array.push(item)
+        array.push(item)
+        return array
     }
 )
 
