@@ -76,6 +76,8 @@ export class BetterSet<T> implements Iterable<T> {
             match_args(this.is_better_set, is_any), (set: BetterSet<any>, item: any) => set._has(item))
         define_generic_procedure_handler(length, 
             match_args(this.is_better_set), (set: BetterSet<any>) => set._length())
+        define_generic_procedure_handler(to_array, 
+            match_args(this.is_better_set), (set: BetterSet<any>) => Array.from(set))
     }
 }
 
@@ -279,13 +281,6 @@ define_generic_procedure_handler(find,
     }
 )
 
-
-define_generic_procedure_handler(to_array,
-    match_args(is_better_set),
-    (set: BetterSet<any>) => {
-        return Array.from(set)
-    }
-)
 
 define_generic_procedure_handler(has_all,
     match_args(is_better_set, is_better_set),

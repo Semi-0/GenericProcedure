@@ -1,7 +1,7 @@
 import { to_string } from "../built_in_generics/generic_conversation";
 import { throw_error } from "../built_in_generics/other_generic_helper";
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure";
-import { match_args, PredicateFunction, register_predicate } from "../Predicates";
+import { match_args, type PredicateFunction, register_predicate } from "../Predicates";
 
 /**
  * Properties System

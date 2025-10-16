@@ -1,5 +1,5 @@
 
-import { all_match, match_args, register_predicate, Predicate, force_load_predicate, get_predicates, summary_all_predicates, PredicateFunction } from "../Predicates"
+import { all_match, match_args, register_predicate, Predicate, force_load_predicate, get_predicates, summary_all_predicates, type PredicateFunction } from "../Predicates"
 
 // helper functions 
 

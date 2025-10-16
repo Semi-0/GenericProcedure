@@ -71,6 +71,16 @@ function compose<T extends any[], R>(
   };
 }
 
+function rightCompose<T extends any[], R>(
+  ...functions: ((...args: any[]) => any)[]
+): (...args: T) => R {
+  return function theRightComposer(...args: T): R {
+    return functions.reduceRight((x, f) => {
+      return Array.isArray(x) ? f(...x) : f(x);
+    }, args as any) as R;
+  };
+}
+
 function andCompose<T extends any[], R>(
   ...functions: ((...args: any[]) => boolean)[]
 ): (...args: T) => boolean {
@@ -161,27 +171,26 @@ function spreadCombine<T, U, V>(
   return theCombination;
 }
 
-function discardArgument(i: number) {
+function discardArgument(i: number, f: (...args: any[]) => any) {
   if (!Number.isInteger(i) || i < 0) {
     throw new Error("i must be a non-negative integer");
   }
 
-  return function<T extends any[], R>(f: (...args: T) => R) {
+
     const m = getArity(f) + 1;
     
     if (i >= m) {
       throw new Error(`Index ${i} is out of bounds for a function with ${m} arguments`);
     }
 
-    return function theCombination(...args: any[]): R {
+    return function theCombination(...args: any[]): any {
       if (args.length !== m) {
         throw new Error(`Expected ${m} arguments, but got ${args.length}`);
       }
       
       const newArgs = listRemove(args, i);
-      return f(...newArgs as T);
+      return f(...newArgs as any);
     };
-  };
 }
 
 function listRemove<T>(lst: T[], index: number): T[] {
@@ -190,19 +199,39 @@ function listRemove<T>(lst: T[], index: number): T[] {
 
 
 
-function curryArgument(i: number) {
-  return function(...args: any[]) {
-    return function<T extends any[], R>(f: (...args: T) => R) {
-      if (args.length !== getArity(f) - 1) {
-        throw new Error(`Expected ${getArity(f) - 1} arguments, but got ${args.length}`);
-      }
-      return function(x: any): R {
-        const newArgs = listInsert(args, i, x);
-        return f(...newArgs as T);
+function curryArgument(i: number, f: (...args: any[]) => any) {
+  return function(arg: any) {
+
+      return function(...xs: any[]): any {
+        const newArgs = listInsert(xs, i, arg);
+        return f(...newArgs as any);
       };
-    };
+    }
+}
+
+function curryArguments(is: number[], f: (...args: any[]) => any) {
+  return function(...args: any[]): any {
+    return function (...xs: any[]): any { 
+      const newArgs = new Array(f.length);
+      
+      // Place curried arguments at their specified indices
+      args.forEach((arg, idx) => {
+        newArgs[is[idx]] = arg;
+      });
+      
+      // Place remaining arguments at remaining positions
+      let xIndex = 0;
+      for (let i = 0; i < f.length; i++) {
+        if (!is.includes(i)) {
+          newArgs[i] = xs[xIndex++];
+        }
+      }
+      
+      return f(...newArgs as any);
+    }
   };
 }
+
 
 function listInsert<T>(lst: T[], index: number, value: T): T[] {
   return [...lst.slice(0, index), value, ...lst.slice(index)];
@@ -236,8 +265,11 @@ export {
   getArity,
   spread,
   compose,
+  rightCompose,
   parallelCombine,
   spreadCombine,
+  curryArgument,
+  curryArguments,
   discardArgument,
   permuteArguments,
   andCompose,

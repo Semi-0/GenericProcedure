@@ -1,6 +1,6 @@
 import type { Int } from "./types";
 import { SimpleDispatchStore } from "./DispatchStore";
-import { DispatchStore } from "./DispatchStore";
+import type { DispatchStore } from "./DispatchStore";
 import { Applicability } from "./Applicatability";
 /**
  * Class representing the metadata for a generic procedure.

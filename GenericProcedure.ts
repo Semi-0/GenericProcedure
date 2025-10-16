@@ -1,7 +1,8 @@
 import { set_metaData, get_metaData, get_default_store, set_store, summarize_metadatas } from "./GenericStore";
 import { GenericProcedureMetadata } from "./GenericProcedureMetadata";
 import type { Int } from "./types";
-import { CachedDispatchStore, DispatchStore, SimpleDispatchStore } from "./DispatchStore";
+import { CachedDispatchStore, SimpleDispatchStore } from "./DispatchStore";
+import type { DispatchStore } from "./DispatchStore";
 import { get_predicate, Predicate } from "./Predicates";
 import { Applicability } from "./Applicatability";
 
