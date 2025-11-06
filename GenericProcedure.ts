@@ -1,10 +1,11 @@
 import { set_metaData, get_metaData, get_default_store, set_store, summarize_metadatas } from "./GenericStore";
-import { GenericProcedureMetadata } from "./GenericProcedureMetadata";
+import { find_matched_rule, GenericProcedureMetadata, get_handler, trace_find_matched_rule, trace_get_handler } from "./GenericProcedureMetadata";
 import type { Int } from "./types";
-import { CachedDispatchStore, SimpleDispatchStore } from "./DispatchStore";
+import {  SimpleDispatchStore } from "./DispatchStore";
 import type { DispatchStore } from "./DispatchStore";
 import { get_predicate, Predicate } from "./Predicates";
 import { Applicability } from "./Applicatability";
+import { is_applicatable, Rule } from "./Rule";
 
 // idea: for a new ide, maybe instead of consider everything linear, it should always seperatable and reorganizable in blocks(and import exportable)
 
@@ -19,13 +20,43 @@ export function define_generic_procedure_handler(procedure: (...args: any) => an
     }
 }
 
-function generic_procedure_dispatch(metaData: GenericProcedureMetadata, args: any[]): any{
-    const matched_handler = metaData.dispatchStore.get_handler(...args)
-    if(matched_handler !== null){
-        return matched_handler(...args)
+
+
+function _generic_procedure_dispatch(
+    find_matched_rule: (metaData: GenericProcedureMetadata, args: any[]) => Rule | undefined,
+    get_handler: (rule: Rule) => (...args: any) => any
+){
+    return (metaData: GenericProcedureMetadata, args: any[]) => {
+        const matched = find_matched_rule(metaData, args)
+        if(matched !== undefined){
+            return get_handler(matched)(...args)
+        }
+        else{
+            return metaData.dispatchStore.get_default_handler()(...args)
+        }
+    }
+}
+
+export const generic_procedure_dispatch = _generic_procedure_dispatch(find_matched_rule, get_handler)
+
+
+export const traced_generic_procedure_dispatch  = (logger: (log: string) => void) => _generic_procedure_dispatch(
+    trace_find_matched_rule(logger),
+    trace_get_handler(logger)
+)
+
+
+
+export function trace_generic_procedure(logger: (log: string) => void,procedure: (...args: any) => any, args: any[]): any{
+    // maybe as a monad?
+    // better for this to be a pure function
+    const metaData = get_metaData(procedure)
+    if(metaData !== undefined){
+        return traced_generic_procedure_dispatch(logger)(metaData, args)
     }
     else{
-        return metaData.dispatchStore.get_default_handler()(...args)
+        throw new Error(`GenericProcedureMetadata not found, procedure: ${procedure.toString()}, 
+        avaliable procedures: ${summarize_metadatas().join(", ")}`)
     }
 }
 
@@ -44,7 +75,7 @@ export function construct_generic_procedure(dispatchStoreMaker: (...args: any) =
 
 export function error_generic_procedure_handler(name: string){
     return (...args: any) => {
-        throw new Error(`Generic procedure ${name} has no handler for arguments ${args.map(arg => arg.toString()).join(", ")}`)
+        throw new Error(`Generic procedure ${name} has no handler for arguments ${args.map((arg: any) => arg.toString()).join(", ")}`)
     }
 }
 
@@ -64,7 +95,7 @@ export function construct_simple_generic_procedure(name: string, arity: Int, def
     return construct_generic_procedure(() => new SimpleDispatchStore())(name, arity, defaultHandler)
 }
 
-export function construct_cached_generic_procedure(name: string, arity: Int, defaultHandler: ((...args: any) => any) | undefined = undefined){
-    return construct_generic_procedure(() => new CachedDispatchStore())(name, arity, defaultHandler)
-}
+// export function construct_cached_generic_procedure(name: string, arity: Int, defaultHandler: ((...args: any) => any) | undefined = undefined){
+//     return construct_generic_procedure(() => new CachedDispatchStore())(name, arity, defaultHandler)
+// }
 

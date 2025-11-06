@@ -115,6 +115,12 @@ export function register_predicate(name: string, predicate: PredicateFunction) {
     return predicate
 }
 
+// export function trace_predicate(predicate: PredicateFunction) {
+//     const name = defaultPredicateStore.getFromProcedure(predicate)?.name || "unknown"
+//     const traced =  register_predicate(name, log_tracer(name, predicate))
+//     return traced as PredicateFunction
+// }
+
 export function is_predicate_registered(callback: (arg: any) => boolean): boolean {
     return defaultPredicateStore.has(callback)
 }

@@ -171,14 +171,14 @@ function spreadCombine<T, U, V>(
   return theCombination;
 }
 
-function discardArgument(i: number, f: (...args: any[]) => any) {
+function discardArgument(i: number, f?: (...args: any[]) => any) {
   if (!Number.isInteger(i) || i < 0) {
     throw new Error("i must be a non-negative integer");
   }
 
+  const build = (fn: (...args: any[]) => any) => {
+    const m = getArity(fn) + 1;
 
-    const m = getArity(f) + 1;
-    
     if (i >= m) {
       throw new Error(`Index ${i} is out of bounds for a function with ${m} arguments`);
     }
@@ -187,10 +187,17 @@ function discardArgument(i: number, f: (...args: any[]) => any) {
       if (args.length !== m) {
         throw new Error(`Expected ${m} arguments, but got ${args.length}`);
       }
-      
+
       const newArgs = listRemove(args, i);
-      return f(...newArgs as any);
+      return fn(...newArgs as any);
     };
+  };
+
+  if (f === undefined) {
+    return (fn: (...args: any[]) => any) => build(fn);
+  }
+
+  return build(f);
 }
 
 function listRemove<T>(lst: T[], index: number): T[] {

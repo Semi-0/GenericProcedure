@@ -18,6 +18,10 @@ export const to_string = construct_simple_generic_procedure(
     }
 )
 
+// define_generic_procedure_handler(to_string, match_args(is_object), (a: object) => {
+//     return JSON.stringify(a)
+// })
+
 define_generic_procedure_handler(to_string, match_args(is_null), (a: null | undefined) => {
     if (a === null){
         return "null"

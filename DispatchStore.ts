@@ -1,11 +1,10 @@
 import { Applicability } from "./Applicatability"
-import { Rule } from "./Rule"
-import * as CryptoJS from 'crypto-js';
-import { Trie } from "./Trie";
+import { log_tracer, trace_function } from "./built_in_generics/generic_debugger"
+import { is_applicatable, Rule } from "./Rule"
 
 export interface DispatchStore{
    
-    get_handler: (...args: any) => ((...args: any) => any) | null
+    get_all_rules: () => Rule[]
     add_handler: (applicability: Applicability, handler: (...args: any) => any) => void
     remove_handler: (applicability: Applicability) => void
     get_default_handler: () => ((...args: any) => any)
@@ -22,6 +21,7 @@ export class SimpleDispatchStore implements DispatchStore{
         console.log('No handler found for action', args)
     }
 
+
     constructor(){}
 
     summary_rules(): string[]{
@@ -32,15 +32,20 @@ export class SimpleDispatchStore implements DispatchStore{
         return this.rules.map(rule => rule.summary_with_args(...args))
     }
 
-    get_handler(...args: any) : ((...args: any) => any) | null {
-       const rule = this.rules.find(rule => rule.applicability.execute(...args))
-       if(rule){
-        return rule.handler
-       }
-       else{
-        return null
-       }
+
+    get_all_rules(){
+        return this.rules
     }
+
+    // get_handler(...args: any) : ((...args: any) => any) | null {
+    //    const rule = this.rules.find(rule => this.match_applicatable(rule.applicability, args))
+    //    if(rule){
+    //     return rule.handler
+    //    }
+    //    else{
+    //     return null
+    //    }
+    // }
 
     add_handler(applicability: Applicability, handler: (...args: any) => any){
         const existed = this.rules.find(rule => rule.applicability.equals(applicability))
@@ -66,43 +71,46 @@ export class SimpleDispatchStore implements DispatchStore{
 }
 
 
+
+
+
 // NOT WORKING YET
-export class CachedDispatchStore extends SimpleDispatchStore {
-    private cache: Map<string, any> = new Map();
+// export class CachedDispatchStore extends SimpleDispatchStore {
+//     private cache: Map<string, any> = new Map();
 
-    to_key(...args: any[]): string {
-        return JSON.stringify(args);
-    }
+//     to_key(...args: any[]): string {
+//         return JSON.stringify(args);
+//     }
 
-    get_handler(...args: any): ((...args: any) => any) | null {
-        const key = this.to_key(args);
-        if (this.cache.has(key)) {
-            return this.cache.get(key);
-        }
-        else{
-            const handler = super.get_handler(...args);
-            if (handler) {
-                this.cache.set(key, handler);
-            }
-            return handler;
-        }
-    }
+//     get_handler(...args: any): ((...args: any) => any) | null {
+//         const key = this.to_key(args);
+//         if (this.cache.has(key)) {
+//             return this.cache.get(key);
+//         }
+//         else{
+//             const handler = super.get_handler(...args);
+//             if (handler) {
+//                 this.cache.set(key, handler);
+//             }
+//             return handler;
+//         }
+//     }
 
-    is_cached(...args: any[]): boolean {
-        const key = this.to_key(args);
-        return this.cache.has(key);
-    }
+//     is_cached(...args: any[]): boolean {
+//         const key = this.to_key(args);
+//         return this.cache.has(key);
+//     }
 
-    add_handler(applicability: Applicability, handler: (...args: any) => any) {
-        super.add_handler(applicability, handler);
-        this.cache.clear(); // Clear cache when a new handler is added
-    }
+//     add_handler(applicability: Applicability, handler: (...args: any) => any) {
+//         super.add_handler(applicability, handler);
+//         this.cache.clear(); // Clear cache when a new handler is added
+//     }
 
-    remove_handler(applicability: Applicability) {
-        super.remove_handler(applicability);
-        this.cache.clear(); // Clear cache when a handler is removed
-    }
-}
+//     remove_handler(applicability: Applicability) {
+//         super.remove_handler(applicability);
+//         this.cache.clear(); // Clear cache when a handler is removed
+//     }
+// }
 
 
 // export class PersistentLocalCachedDispatchStore extends SimpleDispatchStore {

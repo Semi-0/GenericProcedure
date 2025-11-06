@@ -24,3 +24,10 @@ export class Rule{
         return "applicability: " + this.applicability.summary_with_args(...args) + "handler: " + this.handler.toString()
     }
 }
+
+export const is_applicatable = (applicability: Applicability, args: any[]) => {
+    return applicability.execute(...args)
+}
+
+
+

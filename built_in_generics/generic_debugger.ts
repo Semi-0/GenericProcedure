@@ -4,6 +4,7 @@ export function trace_function(logger: (log: string) => void){
 
     return (name: string, f: (...args: any[]) => any) => {
         return (...args: any[]) => {
+            logger("--------------------------------")
             logger(name + " called with args: " +  "\n")
             args.forEach((arg, index) => {
                 logger("arg " + index + ": " + "\n")
@@ -11,6 +12,7 @@ export function trace_function(logger: (log: string) => void){
             })
             const result = f(...args)
             logger(name + " returned: " +  to_string(result) + "\n")
+            logger("--------------------------------")
             return result
         }
     }

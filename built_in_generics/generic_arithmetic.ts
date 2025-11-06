@@ -4,6 +4,7 @@ import {  is_array, is_atom, is_null, is_number, is_string, is_object } from "./
 
 import { guard } from "./other_generic_helper"
 import { compose, orCompose } from "./generic_combinator"
+import { to_string } from "./generic_conversation"
 
 
 export const add = construct_simple_generic_procedure(
@@ -11,7 +12,7 @@ export const add = construct_simple_generic_procedure(
     2,
     (a: number, b: number) => {
         if (typeof a !== "number" || typeof b !== "number") {
-            throw new Error("default generic add: expected two numbers, but got " + typeof a + " and " + typeof b)
+            throw new Error("default generic add: expected two numbers, but got " + to_string(a) + " and " + to_string(b))
         }
         return a + b
     }
@@ -26,7 +27,7 @@ export const multiply = construct_simple_generic_procedure(
     2,
     (a: number, b: number) => {
         if (typeof a !== "number" || typeof b !== "number") {
-            throw new Error("default generic multiply: expected two numbers, but got " + typeof a + " and " + typeof b)
+            throw new Error("default generic multiply: expected two numbers, but got " + to_string(a) + " and " + to_string(b))
         }
         return a * b
     }
@@ -37,7 +38,7 @@ export const divide = construct_simple_generic_procedure(
     2,
     (a: number, b: number) => {
         if (typeof a !== "number" || typeof b !== "number") {
-            throw new Error("default generic divide: expected two numbers, but got " + typeof a + " and " + typeof b)
+            throw new Error("default generic divide: expected two numbers, but got " + to_string(a) + " and " + to_string(b))
         }
         return a / b
     }
