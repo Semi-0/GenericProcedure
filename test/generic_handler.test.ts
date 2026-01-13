@@ -1,4 +1,4 @@
-import { construct_simple_generic_procedure, define_generic_procedure_handler } from '../GenericProcedure';
+import { construct_simple_generic_procedure, define_generic_procedure_handler, trace_generic_procedure } from '../GenericProcedure';
 import {test, expect, describe, beforeEach, mock, jest} from "bun:test";
 
 import { register_predicate, execute_predicate, get_predicate,  match_args, clear_predicate_store } from '../Predicates';
@@ -83,7 +83,7 @@ describe('generic_procedure', () => {
         define_generic_procedure_handler(anotherFunc, match_args(predicate2), specificHandler2);
 
         const result1 = anotherFunc(30);
-        const result2 = anotherFunc(60);
+        const result2 = trace_generic_procedure(console.log, anotherFunc, [60]) 
 
         expect(predicate1).toHaveBeenCalledWith(30);
         expect(specificHandler1).toHaveBeenCalledWith(30);

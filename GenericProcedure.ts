@@ -6,6 +6,8 @@ import type { DispatchStore } from "./DispatchStore";
 import { get_predicate, Predicate } from "./Predicates";
 import { Applicability } from "./Applicatability";
 import { is_applicatable, Rule } from "./Rule";
+import { log_tracer, trace_function } from "./built_in_generics/generic_debugger";
+import { trace_func } from "ppropogator/helper";
 
 // idea: for a new ide, maybe instead of consider everything linear, it should always seperatable and reorganizable in blocks(and import exportable)
 
@@ -22,32 +24,45 @@ export function define_generic_procedure_handler(procedure: (...args: any) => an
 
 
 
+// Use type alias for cleaner code
+type MetaData = GenericProcedureMetadata;
+
 function _generic_procedure_dispatch(
-    find_matched_rule: (metaData: GenericProcedureMetadata, args: any[]) => Rule | undefined,
-    get_handler: (rule: Rule) => (...args: any) => any
+    find_matched_rule: (metaData: MetaData, args: any[]) => Rule | undefined,
+    get_handler: (rule: Rule) => (...args: any) => any,
+    default_handler: (metaData: MetaData, args: any[]) => any
 ){
-    return (metaData: GenericProcedureMetadata, args: any[]) => {
+    return (metaData: MetaData, args: any[]) => {
         const matched = find_matched_rule(metaData, args)
         if(matched !== undefined){
             return get_handler(matched)(...args)
         }
         else{
-            return metaData.dispatchStore.get_default_handler()(...args)
+            return default_handler(metaData, args)
         }
     }
 }
 
-export const generic_procedure_dispatch = _generic_procedure_dispatch(find_matched_rule, get_handler)
+export const meta_data_default_handler = (metaData: MetaData, args: any[]) => {
+    return metaData.dispatchStore.get_default_handler()(...args)
+}
+
+export const generic_procedure_dispatch = _generic_procedure_dispatch(find_matched_rule, get_handler, meta_data_default_handler)
 
 
-export const traced_generic_procedure_dispatch  = (logger: (log: string) => void) => _generic_procedure_dispatch(
-    trace_find_matched_rule(logger),
-    trace_get_handler(logger)
-)
+export const traced_generic_procedure_dispatch  = (logger: (log: string) => void) => {
+    return _generic_procedure_dispatch(
+        trace_find_matched_rule(logger),
+        trace_get_handler(logger),
+        (metaData: MetaData, args: any[]) => {
+            return trace_function(logger)(metaData.name + " default handler", metaData.dispatchStore.get_default_handler())(...args)
+        }
+    )
+}
 
 
 
-export function trace_generic_procedure(logger: (log: string) => void,procedure: (...args: any) => any, args: any[]): any{
+export function trace_generic_procedure(logger: (log: string) => void, procedure: (...args: any) => any, args: any[]): any{
     // maybe as a monad?
     // better for this to be a pure function
     const metaData = get_metaData(procedure)
@@ -57,6 +72,12 @@ export function trace_generic_procedure(logger: (log: string) => void,procedure:
     else{
         throw new Error(`GenericProcedureMetadata not found, procedure: ${procedure.toString()}, 
         avaliable procedures: ${summarize_metadatas().join(", ")}`)
+    }
+}
+
+export const traced_generic_procedure = (logger: (log: string) => void, procedure: (...args: any) => any) => {
+    return (...args: any) => {
+        return trace_generic_procedure(logger, procedure, args)
     }
 }
 
@@ -92,7 +113,13 @@ export function constant_generic_procedure_handler(constant: () => any){
 }
 
 export function construct_simple_generic_procedure(name: string, arity: Int, defaultHandler: ((...args: any) => any) | undefined = undefined){
-    return construct_generic_procedure(() => new SimpleDispatchStore())(name, arity, defaultHandler)
+    // Access SimpleDispatchStore at factory call time, not at construct_simple_generic_procedure call time
+    // This ensures SimpleDispatchStore is initialized when the factory function is actually called
+    return construct_generic_procedure(() => {
+        // SimpleDispatchStore should be available by the time this factory function is called
+        // (which happens when construct_generic_procedure's constructor is invoked)
+        return new SimpleDispatchStore();
+    })(name, arity, defaultHandler)
 }
 
 // export function construct_cached_generic_procedure(name: string, arity: Int, defaultHandler: ((...args: any) => any) | undefined = undefined){

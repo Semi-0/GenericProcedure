@@ -1,5 +1,7 @@
 import { Applicability } from "./Applicatability"
-import { log_tracer, trace_function } from "./built_in_generics/generic_debugger"
+// Removed generic_debugger import to break circular dependency:
+// DispatchStore -> generic_debugger -> generic_conversation -> construct_simple_generic_procedure -> SimpleDispatchStore
+// If debugging is needed, import it where it's used, not at the top level
 import { is_applicatable, Rule } from "./Rule"
 
 export interface DispatchStore{

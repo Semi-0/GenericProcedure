@@ -64,10 +64,10 @@ function spread<T extends any[], R>(
 function compose<T extends any[], R>(
   ...functions: ((...args: any[]) => any)[]
 ): (...args: T) => R {
-  return function theComposer(...args: T): R {
-    return functions.reduce((x, f) => {
-      return Array.isArray(x) ? f(...x) : f(x);
-    }, args as any) as R;
+  return function theComposer(...args: T): R {    
+    return functions.slice(1).reduce((x, f) => {
+      return f(x)
+    }, functions[0](...args) as any) as R;
   };
 }
 

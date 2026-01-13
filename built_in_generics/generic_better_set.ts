@@ -4,14 +4,18 @@ import {construct_simple_generic_procedure, define_generic_procedure_handler} fr
 import { all_match, match_args, register_predicate } from "../Predicates"
 import { to_string } from "./generic_conversation"
 import { map, filter, reduce, add_item, remove_item, copy, has, length, for_each, reduce_right, flat_map, to_array, has_all, is_empty, find, every, first, last } from "./generic_collection"
-import { is_any, is_array, is_function } from "./generic_predicates"
+import { is_any, is_array, is_function, is_string } from "./generic_predicates"
 
 import { compose } from "./generic_combinator"
 import { greater_than, is_equal, less_than } from "./generic_arithmetic"
 import { some } from "./generic_collection"
 export const identify_by = construct_simple_generic_procedure("identify_by", 1, 
     (x) => {
-        if (is_array(x)){
+        if (is_string(x)){
+            return x
+        }     
+        else if (is_array(x)){
+
             return x.map(identify_by).join(",")
         }
         else{
