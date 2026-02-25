@@ -124,4 +124,3 @@ export function construct_simple_generic_procedure(name: string, arity: Int, def
 // export function construct_cached_generic_procedure(name: string, arity: Int, defaultHandler: ((...args: any) => any) | undefined = undefined){
 //     return construct_generic_procedure(() => new CachedDispatchStore())(name, arity, defaultHandler)
 // }
-
