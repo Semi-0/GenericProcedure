@@ -7,7 +7,6 @@ import { get_predicate, Predicate } from "./Predicates";
 import { Applicability } from "./Applicatability";
 import { is_applicatable, Rule } from "./Rule";
 import { log_tracer, trace_function } from "./built_in_generics/generic_debugger";
-import { trace_func } from "ppropogator/helper";
 
 // idea: for a new ide, maybe instead of consider everything linear, it should always seperatable and reorganizable in blocks(and import exportable)
 
