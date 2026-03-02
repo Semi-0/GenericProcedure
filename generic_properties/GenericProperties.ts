@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// Copyright (c) 2009–2015 Gerald Jay Sussman and Chris Hanson
+// Copyright (c) 2024–2026 semi-0
+//
+// This file was ported from the SDF system (Software Design for Flexibility).
+
 import { to_string } from "../built_in_generics/generic_conversation";
 import { throw_error } from "../built_in_generics/other_generic_helper";
 import { construct_simple_generic_procedure, define_generic_procedure_handler } from "../GenericProcedure";

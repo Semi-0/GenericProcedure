@@ -1,3 +1,10 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+//
+// Copyright (c) 2009–2015 Gerald Jay Sussman and Chris Hanson
+// Copyright (c) 2024–2026 semi-0
+//
+// This file was ported from the SDF system (Software Design for Flexibility).
+
 import { set_metaData, get_metaData, get_default_store, set_store, summarize_metadatas } from "./GenericStore";
 import { find_matched_rule, GenericProcedureMetadata, get_handler, trace_find_matched_rule, trace_get_handler } from "./GenericProcedureMetadata";
 import type { Int } from "./types";
