@@ -30,6 +30,9 @@ export const optional_predicate_constructor = (predicate: PredicateFunction) => 
     })
 }
 
+export const is_concrete = register_predicate("is_concrete", (a: any) => {
+    return a !== undefined && a !== null
+})
 
 const _is_atom = (a: any): a is string | number | boolean => {
   if (is_string(a) || is_number(a) || is_boolean(a) || (is_object(a) && !is_array(a))) {

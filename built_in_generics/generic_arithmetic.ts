@@ -18,10 +18,6 @@ export const add = construct_simple_generic_procedure(
     }
 )
 
-
-
-
-
 export const multiply = construct_simple_generic_procedure(
     "multiply",
     2,
