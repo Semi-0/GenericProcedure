@@ -107,6 +107,15 @@ export const first = construct_simple_generic_procedure(
     }
 )
 
+export const rest = construct_simple_generic_procedure(
+    "rest",
+    1,
+    (array: any[]) => {
+        guard(is_array(array), throw_type_mismatch("rest", "array", array.toString()))
+        return array.slice(1)
+    }
+)
+
 export const last = construct_simple_generic_procedure(
     "last",
     1,

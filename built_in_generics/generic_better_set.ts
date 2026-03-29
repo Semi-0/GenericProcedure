@@ -3,7 +3,7 @@
 import {construct_simple_generic_procedure, define_generic_procedure_handler} from "../GenericProcedure"
 import { all_match, match_args, register_predicate } from "../Predicates"
 import { to_string } from "./generic_conversation"
-import { map, filter, reduce, add_item, remove_item, copy, has, length, for_each, reduce_right, flat_map, to_array, has_all, is_empty, find, every, first, last } from "./generic_collection"
+import { map, filter, reduce, add_item, remove_item, copy, has, length, for_each, reduce_right, flat_map, to_array, has_all, is_empty, find, every, first, last, rest } from "./generic_collection"
 import { is_any, is_array, is_function, is_string } from "./generic_predicates"
 
 import { compose } from "./generic_combinator"
@@ -125,7 +125,7 @@ define_generic_procedure_handler(
     identify_by,
     match_args(is_better_set),
     (s: BetterSet<any>) => {
-        const items = to_array(s).map(i => identify_by(i));
+        const items = to_array(s).map((i: any) => identify_by(i));
         items.sort(); // ensure order-independence
         return hashObjectSync(items);
     }
@@ -137,7 +137,7 @@ define_generic_procedure_handler(
     match_args(is_better_set), 
     (a: BetterSet<any>) => {
         return 'BetterSet[' + 
-              reduce(a, (acc, value) => acc + to_string(value), '')   
+              reduce(a, (acc: string, value: any) => acc + to_string(value), '')   
               + ']'
 })
 
@@ -173,7 +173,7 @@ define_generic_procedure_handler(for_each, match_args(is_better_set, is_function
 
 define_generic_procedure_handler(filter, match_args(is_better_set, is_function), (set: BetterSet<any>, predicate: (item: any) => boolean) => {
     var result = copy(set)
-    for_each(set, (value) => {
+    for_each(set, (value: any) => {
         if (!predicate(value)){
             result = remove_item(result, value)
         }
@@ -183,7 +183,7 @@ define_generic_procedure_handler(filter, match_args(is_better_set, is_function),
 
 define_generic_procedure_handler(map, match_args(is_better_set, is_function), (set: BetterSet<any>, mapper: (item: any) => any) => {
     var result = construct_better_set<any>([])
-    for_each(set, (value) => {
+    for_each(set, (value: any) => {
         result = add_item(result, mapper(value))
     })
     return result
@@ -191,7 +191,7 @@ define_generic_procedure_handler(map, match_args(is_better_set, is_function), (s
 
 define_generic_procedure_handler(reduce, match_args(is_better_set, is_function, is_any), (set: BetterSet<any>, reducer: (acc: any, value: any) => any, initial: any) => {
     var result = initial
-    for_each(set, (value) => {
+    for_each(set, (value: any) => {
         result = reducer(result, value)
     })
     return result
@@ -200,7 +200,7 @@ define_generic_procedure_handler(reduce, match_args(is_better_set, is_function, 
 
 export function set_merge<T>(set1: BetterSet<T>, set2: BetterSet<T>): BetterSet<T>{
     var result = copy(set1)
-    for_each(set2, (value) => {
+    for_each(set2, (value: any) => {
         result = add_item(result, value)
     })
     return result
@@ -208,7 +208,7 @@ export function set_merge<T>(set1: BetterSet<T>, set2: BetterSet<T>): BetterSet<
 
 export function set_difference<T>(set1: BetterSet<T>, set2: BetterSet<T>): BetterSet<T>{
     var result = copy(set1)
-    for_each(set1, (value) => {
+    for_each(set1, (value: any) => {
         if (has(set2, value)){
             result = remove_item(result, value)
         }
@@ -248,11 +248,11 @@ define_generic_procedure_handler(flat_map,
     (set: BetterSet<any>, mapper: (item: any) => any) => {
         var flatten_set = construct_better_set([]);
     
-        for_each(set,(value) => {
+        for_each(set,(value: any) => {
             const mapped = mapper(value);
             if (is_better_set(mapped)) {
                 // If mapper returns a set, add all its values to the result
-                for_each(mapped, (innerValue) => {
+                for_each(mapped, (innerValue: any) => {
                     flatten_set = add_item(flatten_set, innerValue);
                 })
             } else {
@@ -331,11 +331,17 @@ define_generic_procedure_handler(greater_than,
     }
 )
 
+define_generic_procedure_handler(rest,
+    match_args(is_better_set),
+    (set: BetterSet<any>) => {
+        return construct_better_set(rest(to_array(set)))
+    }
+)
 
 
 export function set_remove<T>(set: BetterSet<T>, ...elts: T[]): BetterSet<T>{
     var result = copy(set)
-    for_each(set, (value) => {
+    for_each(set, (value: any) => {
         if (elts.includes(value)){
             result = remove_item(result, value)
         }
