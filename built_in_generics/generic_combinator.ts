@@ -114,6 +114,13 @@ function orCompose<T extends any[], R>(
   }
 }
 
+/** Boolean negation of a predicate: `notCompose(f)(...args) === !f(...args)`. */
+function notCompose<T extends any[]>(
+  f: (...args: any[]) => boolean
+): (...args: T) => boolean {
+  return (...args: any[]) => !f(...args)
+}
+
 function andExecute<T extends any[], R>(
   ...functions: ((...args: any[]) => any | boolean | undefined)[]
 ): (...args: T) => R | false {
@@ -288,6 +295,7 @@ export {
   permuteArguments,
   andCompose,
   orCompose,
+  notCompose,
   andExecute,
   orExecute
 }

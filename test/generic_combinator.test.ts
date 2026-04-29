@@ -1,4 +1,4 @@
-import { getArity, spread, compose, parallelCombine, spreadCombine, discardArgument, permuteArguments, curryArgument, curryArguments } from '../built_in_generics/generic_combinator';
+import { getArity, spread, compose, parallelCombine, spreadCombine, discardArgument, permuteArguments, curryArgument, curryArguments, andCompose, orCompose, notCompose } from '../built_in_generics/generic_combinator';
 import { test, expect, describe } from "bun:test";
 
 describe('GenericCombinator', () => {
@@ -36,6 +36,51 @@ describe('GenericCombinator', () => {
         const composed = compose(square, addOne, double);
 
         expect(composed(3)).toBe(20);
+    });
+
+    test('andCompose: all predicates must pass', () => {
+        const positive = (n: number) => n > 0;
+        const even = (n: number) => n % 2 === 0;
+        const p = andCompose(positive, even);
+        expect(p(4)).toBe(true);
+        expect(p(3)).toBe(false);
+        expect(p(-2)).toBe(false);
+    });
+
+    test('andCompose: empty conjunction is true', () => {
+        const p = andCompose();
+        expect(p(1, 2, 3)).toBe(true);
+    });
+
+    test('orCompose: any predicate passes', () => {
+        const negative = (n: number) => n < 0;
+        const zero = (n: number) => n === 0;
+        const p = orCompose(negative, zero);
+        expect(p(-1)).toBe(true);
+        expect(p(0)).toBe(true);
+        expect(p(5)).toBe(false);
+    });
+
+    test('orCompose: empty disjunction is false', () => {
+        const p = orCompose();
+        expect(p(1)).toBe(false);
+    });
+
+    test('notCompose: negates predicate', () => {
+        const isEven = (n: number) => n % 2 === 0;
+        const isOdd = notCompose(isEven);
+        expect(isOdd(3)).toBe(true);
+        expect(isOdd(4)).toBe(false);
+    });
+
+    test('notCompose: can combine with andCompose / orCompose', () => {
+        const inRange = andCompose(
+            (n: number) => n >= 0,
+            notCompose((n: number) => n > 10)
+        );
+        expect(inRange(5)).toBe(true);
+        expect(inRange(11)).toBe(false);
+        expect(inRange(-1)).toBe(false);
     });
 
     // Test for parallelCombine function
